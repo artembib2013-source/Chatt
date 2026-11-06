@@ -25,7 +25,6 @@ CREATE TABLE IF NOT EXISTS orders(id INTEGER PRIMARY KEY AUTOINCREMENT,product_i
 `);
 
 // главная группа id=1
-const mainChat = db.prepare('SELECT id FROM chats_main').get?.() || null;
 db.exec(`CREATE TABLE IF NOT EXISTS chats_main(id INTEGER PRIMARY KEY, name TEXT)`);
 if (!db.prepare('SELECT id FROM chats_main WHERE id=1').get()) {
   db.prepare('INSERT INTO chats_main(id,name) VALUES(1,?)').run('🏠 Главная группа');
