@@ -3,53 +3,69 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Чат с заявками</title>
+<title>Telegram Clone</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hidden}
 .hidden{display:none!important}
-#auth{display:flex;align-items:center;justify-content:center;height:100vh;padding:16px}
-.card{background:#fff;padding:22px;border-radius:12px;width:100%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.1)}
-.card h2{margin-bottom:14px;font-size:19px}
+/* Стили авторизации */
+#auth{display:flex;align-items:center;justify-content:center;height:100vh;padding:16px;background:#3390ec}
+.card{background:#fff;padding:22px;border-radius:12px;width:100%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.2)}
+.card h2{margin-bottom:14px;font-size:19px;text-align:center;color:#3390ec}
 .card input{width:100%;padding:11px;margin:5px 0;border:1px solid #ccc;border-radius:8px;font-size:15px;outline:none}
-.card button{width:100%;padding:11px;margin-top:8px;background:#3390ec;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:15px}
+.card button{width:100%;padding:11px;margin-top:8px;background:#3390ec;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:15px;cursor:pointer}
 .card .sw{text-align:center;margin-top:10px;font-size:13px;color:#3390ec;cursor:pointer}
-.err{color:#c22;font-size:12px;margin-top:5px;min-height:16px}
-.ok{color:#2ba84a;font-size:13px;margin-top:10px;font-weight:bold;background:#effdde;padding:10px;border-radius:6px;text-align:center}
+.err{color:#c22;font-size:12px;margin-top:5px;min-height:16px;text-align:center}
 
+/* Интерфейс */
 #app{display:flex;height:100vh;flex-direction:column}
 @media(min-width:700px){#app{flex-direction:row}}
 .sidebar{background:#fff;border-right:1px solid #ddd;width:100%;height:100vh;display:flex;flex-direction:column}
-@media(min-width:700px){.sidebar{width:280px}}
+@media(min-width:700px){.sidebar{width:300px}}
 .sidebar header{background:#3390ec;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center}
+.user-profile{display:flex;align-items:center;gap:10px}
+.avatar{width:40px;height:40px;border-radius:50%;background:#ccc;object-fit:cover}
 .chat-list{flex:1;overflow-y:auto}
-.chat-item{padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between}
+.chat-item{padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;align-items:center;gap:10px}
 .chat-item.on{background:#e8f2fc}
 .chat-item .name{font-weight:600}
 .chat-item .count{font-size:11px;color:#888}
-.sidebar .actions{padding:10px;border-top:1px solid #eee}
-.sidebar .actions button{width:100%;padding:10px;background:#2ba84a;color:#fff;border:none;border-radius:8px;font-weight:600;margin-bottom:8px}
-.sidebar .actions .admin-btn{background:#d6274a;margin-bottom:0}
+.sidebar .actions{padding:10px;border-top:1px solid #eee;display:flex;flex-direction:column;gap:5px}
+.sidebar .actions button{width:100%;padding:10px;background:#2ba84a;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer}
+.sidebar .actions .admin-btn{background:#d6274a}
 
 .main{flex:1;display:flex;flex-direction:column;background:#dfe6ec;height:100vh}
 .main header{padding:12px;background:#fff;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center}
-#log{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:5px}
-.msg{max-width:80%;padding:7px 11px;background:#fff;border-radius:11px;word-wrap:break-word;box-shadow:0 1px 1px rgba(0,0,0,.05)}
-.msg.mine{align-self:flex-end;background:#effdde}
+#log{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.msg{display:flex;gap:8px;max-width:85%}
+.msg.mine{align-self:flex-end;flex-direction:row-reverse}
+.msg .bubble{padding:8px 12px;background:#fff;border-radius:12px;word-wrap:break-word;box-shadow:0 1px 1px rgba(0,0,0,.05)}
+.msg.mine .bubble{background:#effdde}
 .msg .who{font-size:11px;color:#3390ec;font-weight:600;margin-bottom:2px}
 .msg .t{font-size:10px;color:#999;text-align:right;margin-top:2px}
 .comp{padding:8px;background:#fff;border-top:1px solid #ddd;display:flex;gap:6px}
 .comp input{flex:1;padding:9px 13px;border:1px solid #ccc;border-radius:18px;font-size:14px;outline:none}
-.comp button{padding:9px 16px;border:none;background:#3390ec;color:#fff;border-radius:18px;font-size:15px}
-#shopBox{padding:12px;display:grid;gap:10px;overflow-y:auto;flex:1}
-.prod{background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
-.prod h4{font-size:15px;margin-bottom:4px}
-.prod .price{color:#2ba84a;font-weight:700;font-size:16px}
-.prod img{max-width:100%;border-radius:6px;margin-top:6px;max-height:150px;object-fit:cover}
-.prod button{margin-top:8px;padding:8px 14px;border:none;border-radius:6px;background:#2ba84a;color:#fff;font-weight:600;cursor:pointer}
-.sell-form{padding:12px;background:#fff;margin:10px;border-radius:10px}
+.comp button{padding:9px 16px;border:none;background:#3390ec;color:#fff;border-radius:18px;font-size:15px;cursor:pointer}
+
+/* Магазин */
+#shopBox{padding:12px;display:grid;gap:10px;overflow-y:auto;flex:1;grid-template-columns:1fr 1fr}
+.prod{background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 2px rgba(0,0,0,.06);display:flex;flex-direction:column}
+.prod img{width:100%;height:120px;object-fit:cover;border-radius:6px;margin:8px 0}
+.prod h4{font-size:14px}
+.prod .price{color:#f39c12;font-weight:700;font-size:15px}
+.prod button{margin-top:auto;padding:8px;border:none;border-radius:6px;background:#2ba84a;color:#fff;font-weight:600;cursor:pointer}
+.sell-form{padding:12px;background:#fff;margin:10px;border-radius:10px;width:100%;max-width:400px;align-self:center}
 .sell-form input,.sell-form textarea{width:100%;padding:9px;margin:5px 0;border:1px solid #ccc;border-radius:7px;font-size:14px;font-family:inherit}
 .sell-form button{width:100%;padding:10px;margin-top:6px;background:#3390ec;color:#fff;border:none;border-radius:7px;font-weight:600}
+
+/* Модалки */
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
+.modal{background:#fff;padding:20px;border-radius:12px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
+.modal input{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px}
+.user-list{max-height:150px;overflow-y:auto;margin:10px 0;border:1px solid #eee;padding:5px;border-radius:8px}
+.user-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;font-size:14px;border-bottom:1px solid #f5f5f5}
+.modal button{padding:10px;width:100%;background:#3390ec;color:#fff;border:none;border-radius:8px;margin-top:8px;cursor:pointer}
+.modal .close{background:#eee;color:#333}
 
 @media(max-width:699px){
   .main{display:none}
@@ -58,25 +74,15 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
   #back-btn{display:inline-block!important}
 }
 #back-btn{display:none;background:none;border:none;font-size:20px;cursor:pointer;margin-right:8px}
-.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
-.modal{background:#fff;padding:20px;border-radius:12px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
-.modal input{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px}
-.user-list{max-height:150px;overflow-y:auto;margin:10px 0;border:1px solid #eee;padding:5px;border-radius:8px}
-.user-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;font-size:14px;border-bottom:1px solid #f5f5f5}
-.modal button{padding:10px;width:100%;background:#3390ec;color:#fff;border:none;border-radius:8px;margin-top:8px;cursor:pointer}
-.modal .close{background:#eee;color:#333}
 .btn-ban{background:#c22!important;color:#fff;padding:4px 8px;font-size:11px;width:auto!important;margin:0!important}
 .btn-unban{background:#2ba84a!important;color:#fff;padding:4px 8px;font-size:11px;width:auto!important;margin:0!important}
-.btn-req{background:#3390ec!important;color:#fff;padding:4px 8px;font-size:11px;width:auto!important;margin:0!important}
-.req-item{background:#f9f9f9;padding:10px;margin:5px 0;border-radius:6px;font-size:13px;border-left:3px solid #3390ec}
 </style>
 </head>
 <body>
 
-<!-- ЭКРАН ВХОДА -->
 <div id="auth">
   <div class="card" id="loginCard">
-    <h2>Вход</h2>
+    <h2>Вход в мессенджер</h2>
     <input id="u" placeholder="Логин">
     <input id="p" type="password" placeholder="Пароль">
     <button onclick="doLogin()">Войти</button>
@@ -86,25 +92,31 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
 
   <div class="card hidden" id="requestCard">
     <h2>Заявка на регистрацию</h2>
-    <input id="reqContact" placeholder="Ваш номер или имя (напр. bon't)">
+    <input id="reqContact" placeholder="Ваш номер (напр. +7999...)">
     <button onclick="sendRequest()">Отправить</button>
     <div class="sw" onclick="showLogin()">Уже есть аккаунт? Войти</div>
     <div class="err" id="reqErr"></div>
-    <div class="ok hidden" id="reqOk"></div>
+    <div class="ok hidden" id="reqOk" style="color:#2ba84a;font-size:13px;margin-top:10px;text-align:center"></div>
     <div class="sw" style="margin-top:15px" onclick="checkRequestStatus()">Проверить статус заявки</div>
   </div>
 </div>
 
-<!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
 <div id="app" class="hidden">
   <div class="sidebar">
     <header>
-      <div id="me-name">Профиль</div>
-      <button onclick="logout()" style="background:none;border:none;color:#fff;cursor:pointer">Выйти</button>
+      <div class="user-profile">
+        <img id="myAvatar" class="avatar" src="https://via.placeholder.com/40" onclick="openSettings()">
+        <div>
+          <div id="me-name" style="font-weight:600">Профиль</div>
+          <div style="font-size:11px;color:#cde">Баланс: <span id="me-balance">0</span> П.</div>
+        </div>
+      </div>
+      <button onclick="logout()" style="background:none;border:none;color:#fff;font-size:12px;cursor:pointer">Выйти</button>
     </header>
     <div class="chat-list" id="chatList"></div>
     <div class="actions">
       <button onclick="openCreateChat()">+ Создать группу</button>
+      <button onclick="openTransfer()" style="background:#f39c12">💸 Перевести Пулики</button>
       <button id="adminPanelBtn" class="admin-btn hidden" onclick="openAdminPanel()">🛠 Панель Админа</button>
     </div>
   </div>
@@ -123,14 +135,13 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
     </header>
 
     <div id="log"></div>
-    
     <div id="shopBox" class="hidden"></div>
     
-    <div id="sellBox" class="hidden">
+    <div id="sellBox" class="hidden" style="overflow-y:auto;display:flex;flex-direction:column">
       <div class="sell-form">
         <h3>Выставить товар</h3>
         <input id="ptitle" placeholder="Название">
-        <input id="pprice" type="number" placeholder="Цена, ₽">
+        <input id="pprice" type="number" placeholder="Цена (в Пуликах)">
         <textarea id="pdescr" placeholder="Описание" rows="2"></textarea>
         <input id="pimage" placeholder="Ссылка на фото (URL)">
         <button onclick="sell()">Выставить</button>
@@ -147,9 +158,7 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-let me=null, socket=null, currentChatId=null;
-let allChats=[];
-let lastReqContact = '';
+let me=null, socket=null, currentChatId=null, allChats=[];
 
 async function api(url,m='GET',b){
   const r=await fetch(url,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});
@@ -160,284 +169,204 @@ async function api(url,m='GET',b){
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmtT(ts){return new Date(ts).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}
 
-// --- ЭКРАН ЗАЯВОК ---
-function showRequest() {
-  $('loginCard').classList.add('hidden');
-  $('requestCard').classList.remove('hidden');
-}
-function showLogin() {
-  $('requestCard').classList.add('hidden');
-  $('loginCard').classList.remove('hidden');
-}
-
+// --- АВТОРИЗАЦИЯ ---
+function showRequest() { $('loginCard').classList.add('hidden'); $('requestCard').classList.remove('hidden'); }
+function showLogin() { $('requestCard').classList.add('hidden'); $('loginCard').classList.remove('hidden'); }
 async function sendRequest() {
-  $('reqErr').textContent = '';
-  $('reqOk').classList.add('hidden');
   const contact = $('reqContact').value.trim();
-  if(!contact) return $('reqErr').textContent = 'Введи номер или имя';
-  try {
-    await api('/api/request', 'POST', { contact });
-    lastReqContact = contact;
-    $('reqOk').textContent = '✅ Заявка отправлена! Ждите, админ выдаст логин и пароль.';
-    $('reqOk').classList.remove('hidden');
-  } catch(e) { $('reqErr').textContent = e.message; }
+  if(!contact) return $('reqErr').textContent = 'Введи номер';
+  await api('/api/request', 'POST', { contact });
+  $('reqOk').textContent = '✅ Заявка отправлена!'; $('reqOk').classList.remove('hidden');
 }
-
 async function checkRequestStatus() {
-  $('reqErr').textContent = '';
-  $('reqOk').classList.add('hidden');
   const contact = $('reqContact').value.trim();
-  if(!contact) return $('reqErr').textContent = 'Введи свой номер или имя';
-  try {
-    const res = await api('/api/check-request', 'POST', { contact });
-    if(res.status === 'pending') {
-      $('reqErr').textContent = '⏳ Заявка еще на рассмотрении.';
-    } else {
-      $('reqOk').innerHTML = `✅ Аккаунт создан!<br><br>Логин: <b>${res.login}</b><br>Пароль: <b>${res.password}</b>`;
-      $('reqOk').classList.remove('hidden');
-    }
-  } catch(e) { $('reqErr').textContent = e.message; }
+  const res = await api('/api/check-request', 'POST', { contact });
+  if(res.status === 'pending') $('reqErr').textContent = '⏳ Ожидайте.';
+  else { $('reqOk').innerHTML = `✅ Логин: <b>${res.login}</b><br>Пароль: <b>${res.password}</b>`; $('reqOk').classList.remove('hidden'); }
 }
-
-// --- ВХОД ---
 async function doLogin(){
-  $('err').textContent='';
-  const username=$('u').value.trim(), password=$('p').value;
-  if(!username||!password){$('err').textContent='Заполни поля';return}
   try{
-    const {user}=await api('/api/login','POST',{username,password});
+    const {user}=await api('/api/login','POST',{username:$('u').value.trim(),password:$('p').value});
     me=user; start();
   }catch(e){$('err').textContent=e.message}
 }
-
 async function logout(){ await api('/api/logout','POST'); location.reload(); }
 
+// --- СТАРТ ---
 async function start(){
-  $('auth').classList.add('hidden');
-  $('app').classList.remove('hidden');
-  $('me-name').textContent=me.username;
+  $('auth').classList.add('hidden'); $('app').classList.remove('hidden');
+  updateMyProfile();
   if(me.role === 'admin') $('adminPanelBtn').classList.remove('hidden');
   
   socket=io();
-  socket.on('message', m => {
-    if(m.chat_id === currentChatId) addMessageToUI(m);
-  });
+  socket.on('message', m => { if(m.chat_id === currentChatId) addMessageToUI(m); });
   socket.on('new_chat_created', loadChats);
   socket.on('new_product', loadShop);
-  socket.on('new_request', () => {
-    if(me.role === 'admin') alert('🔔 Новая заявка на регистрацию!');
-  });
-  socket.on('emergency_clear', () => {
-    $('log').innerHTML = '';
-    alert('⚠️ Экстренная очистка: все сообщения удалены.');
-  });
+  socket.on('new_request', () => { if(me.role === 'admin') alert('🔔 Новая заявка!'); });
+  socket.on('emergency_clear', () => { $('log').innerHTML = ''; alert('⚠️ Все сообщения удалены.'); });
 
   await loadChats();
 }
 
+function updateMyProfile() {
+  $('me-name').textContent = me.username;
+  $('me-balance').textContent = me.balance;
+  $('myAvatar').src = me.avatar || `https://ui-avatars.com/api/?name=${me.username}&background=random`;
+}
+
+// --- ЧАТЫ ---
 async function loadChats(){
-  const {chats}=await api('/api/chats');
-  allChats=chats;
+  const {chats}=await api('/api/chats'); allChats=chats;
   const list=$('chatList');list.innerHTML='';
   chats.forEach(c=>{
     const d=document.createElement('div');
     d.className='chat-item'+(c.id===currentChatId?' on':'');
-    d.innerHTML=`<div class="name">${esc(c.name)}</div><div class="count">${c.members_count} чел.</div>`;
+    d.innerHTML=`<img class="avatar" src="https://ui-avatars.com/api/?name=${esc(c.name)}&background=random"><div><div class="name">${esc(c.name)}</div><div class="count">${c.members_count} чел.</div></div>`;
     d.onclick=()=>openChat(c.id, c.name);
     list.appendChild(d);
   });
 }
-
 async function openChat(id, name){
-  currentChatId=id;
-  $('chat-title').textContent=name;
-  $('app').classList.add('chat-open');
-  $('log').classList.remove('hidden');
-  $('comp').style.display='flex';
-  $('shopBox').classList.add('hidden');
-  $('sellBox').classList.add('hidden');
-  
+  currentChatId=id; $('chat-title').textContent=name;
+  $('app').classList.add('chat-open'); $('log').classList.remove('hidden'); $('comp').style.display='flex';
+  $('shopBox').classList.add('hidden'); $('sellBox').classList.add('hidden');
   socket.emit('join_chat', id);
   const {messages}=await api('/api/messages?chat_id='+id);
-  $('log').innerHTML='';
-  messages.forEach(addMessageToUI);
-  loadChats();
+  $('log').innerHTML=''; messages.forEach(addMessageToUI); loadChats();
 }
-
 function closeChat(){$('app').classList.remove('chat-open'); currentChatId=null;}
-
 function addMessageToUI(m){
-  const d=document.createElement('div');
-  d.className='msg'+(m.user_id===me.id?' mine':'');
-  d.innerHTML=(m.username!=='Система'?`<div class="who">${esc(m.username)}</div>`:'')+esc(m.text)+`<div class="t">${fmtT(m.created_at)}</div>`;
-  $('log').appendChild(d);
-  $('log').scrollTop=$('log').scrollHeight;
+  const d=document.createElement('div'); d.className='msg'+(m.user_id===me.id?' mine':'');
+  d.innerHTML=`<img class="avatar" src="${m.avatar || 'https://ui-avatars.com/api/?name='+esc(m.username)}"><div class="bubble">${m.username!=='Система'?`<div class="who">${esc(m.username)}</div>`:''}${esc(m.text)}<div class="t">${fmtT(m.created_at)}</div></div>`;
+  $('log').appendChild(d); $('log').scrollTop=$('log').scrollHeight;
 }
+function send(){ const t=$('msg').value.trim(); if(!t||!currentChatId)return; socket.emit('message',{chatId:currentChatId, text:t}); $('msg').value='';$('msg').focus(); }
+$('msg').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}});
 
-function send(){
-  const t=$('msg').value.trim();
-  if(!t||!currentChatId)return;
-  socket.emit('message',{chatId:currentChatId, text:t});
-  $('msg').value='';$('msg').focus();
-}
-
-function tab(t){
-  if(!currentChatId)return alert('Выбери чат');
-  $('log').classList.toggle('hidden',t!=='chat');
-  $('shopBox').classList.toggle('hidden',t!=='shop');
-  $('sellBox').classList.toggle('hidden',t!=='sell');
-  $('comp').style.display=t==='chat'?'flex':'none';
-  if(t==='shop')loadShop();
-}
-
-async function openCreateChat(){
-  const {users}=await api('/api/users');
-  const bg=document.createElement('div');
-  bg.className='modal-bg';
-  bg.innerHTML=`
-    <div class="modal">
-      <h3>Новая группа</h3>
-      <input id="gname" placeholder="Название группы">
-      <div class="user-list">
-        ${users.map(u=>`<label class="user-item"><input type="checkbox" value="${u.id}"> ${esc(u.username)}</label>`).join('')}
-      </div>
-      <button onclick="createGroup(this)">Создать</button>
-      <button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button>
-    </div>
-  `;
-  document.body.appendChild(bg);
-}
-
-async function createGroup(btn){
-  const bg=btn.closest('.modal-bg');
-  const name=bg.querySelector('#gname').value.trim();
-  const memberIds=[...bg.querySelectorAll('input:checked')].map(i=>+i.value);
-  if(!name)return alert('Введи название');
-  await api('/api/chats','POST',{name, memberIds});
-  bg.remove();
-  await loadChats();
-}
-
+// --- МАГАЗИН ---
 async function loadShop(){
-  const {products}=await api('/api/products');
-  const box=$('shopBox');box.innerHTML='';
+  const {products}=await api('/api/products'); const box=$('shopBox');box.innerHTML='';
   if(!products.length){box.innerHTML='<div style="text-align:center;color:#888;padding:20px">Товаров нет</div>';return}
   products.forEach(p=>{
-    const d=document.createElement('div');
-    d.className='prod';
-    d.innerHTML=`<h4>${esc(p.title)}</h4><div class="price">${p.price} ₽</div>
-    <div style="font-size:12px;color:#666">${esc(p.descr||'')}</div>
-    ${p.image_url ? `<img src="${esc(p.image_url)}" alt="Товар">` : ''}
+    const d=document.createElement('div'); d.className='prod';
+    d.innerHTML=`<h4>${esc(p.title)}</h4><div class="price">${p.price} П.</div><div style="font-size:12px;color:#666">${esc(p.descr||'')}</div>
+    ${p.image_url ? `<img src="${esc(p.image_url)}">` : ''}
     <div style="font-size:11px;color:#999;margin-top:4px">Продавец: ${esc(p.seller)}</div>
     ${p.seller!==me.username?`<button onclick="buy(${p.id})">Купить</button>`:'<div style="font-size:11px;color:#999;margin-top:6px">Твой товар</div>'}`;
     box.appendChild(d);
   });
 }
-
 async function sell(){
   const title=$('ptitle').value.trim(), price=$('pprice').value, descr=$('pdescr').value.trim(), image_url=$('pimage').value.trim();
   if(!title||!price)return alert('Заполни поля');
   await api('/api/products','POST',{title,price,descr,image_url});
   $('ptitle').value='';$('pprice').value='';$('pdescr').value='';$('pimage').value='';
-  alert('Товар выставлен!'); tab('shop');
+  alert('Выставлено!'); tab('shop');
+}
+async function buy(id){
+  if(!confirm('Купить за Пулики?'))return;
+  const res = await api('/api/products/'+id+'/buy','POST');
+  alert('Куплено! Открываю чат с продавцом.');
+  await loadChats(); openChat(res.chatId, 'Чат покупки');
 }
 
-async function buy(id){
-  if(!confirm('Купить?'))return;
-  const res = await api('/api/products/'+id+'/buy','POST');
-  alert('Куплено! Открываю личный чат с продавцом.');
-  await loadChats();
-  const chat = allChats.find(c => c.id === res.chatId);
-  if(chat) openChat(chat.id, chat.name);
-  else openChat(res.chatId, 'Чат покупки');
+function tab(t){
+  if(!currentChatId)return alert('Выбери чат');
+  $('log').classList.toggle('hidden',t!=='chat'); $('shopBox').classList.toggle('hidden',t!=='shop'); $('sellBox').classList.toggle('hidden',t!=='sell');
+  $('comp').style.display=t==='chat'?'flex':'none'; if(t==='shop')loadShop();
+}
+
+// --- ПЕРЕВОД ПУЛИКОВ ---
+async function openTransfer(){
+  const bg=document.createElement('div'); bg.className='modal-bg';
+  bg.innerHTML=`<div class="modal"><h3>Перевод Пуликов</h3>
+    <input id="trUser" placeholder="Логин получателя"><input id="trAmount" type="number" placeholder="Сумма">
+    <button onclick="doTransfer(this)">Отправить</button>
+    <button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button></div>`;
+  document.body.appendChild(bg);
+}
+async function doTransfer(btn){
+  const bg=btn.closest('.modal-bg');
+  const toUser=bg.querySelector('#trUser').value.trim(), amount=bg.querySelector('#trAmount').value;
+  try {
+    await api('/api/transfer', 'POST', { toUser, amount });
+    alert('Переведено!'); bg.remove();
+    me.balance -= +amount; updateMyProfile();
+  } catch(e) { alert(e.message); }
+}
+
+// --- СОЗДАНИЕ ГРУППЫ ---
+async function openCreateChat(){
+  const {users}=await api('/api/users'); const bg=document.createElement('div'); bg.className='modal-bg';
+  bg.innerHTML=`<div class="modal"><h3>Новая группа</h3><input id="gname" placeholder="Название">
+      <div class="user-list">${users.map(u=>`<label class="user-item"><input type="checkbox" value="${u.id}"> ${esc(u.username)}</label>`).join('')}</div>
+      <button onclick="createGroup(this)">Создать</button><button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button></div>`;
+  document.body.appendChild(bg);
+}
+async function createGroup(btn){
+  const bg=btn.closest('.modal-bg'); const name=bg.querySelector('#gname').value.trim();
+  const memberIds=[...bg.querySelectorAll('input:checked')].map(i=>+i.value);
+  if(!name)return alert('Введи название'); await api('/api/chats','POST',{name, memberIds}); bg.remove(); await loadChats();
+}
+
+// --- НАСТРОЙКИ ПРОФИЛЯ (АВАТАРКА) ---
+function openSettings(){
+  const bg=document.createElement('div'); bg.className='modal-bg';
+  bg.innerHTML=`<div class="modal"><h3>Настройки профиля</h3>
+    <p style="font-size:12px;color:#666;margin-bottom:8px">Вставь ссылку на фото:</p>
+    <input id="setAvatar" placeholder="https://...">
+    <button onclick="saveSettings(this)">Сохранить</button>
+    <button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button></div>`;
+  document.body.appendChild(bg);
+  bg.querySelector('#setAvatar').value = me.avatar || '';
+}
+async function saveSettings(btn){
+  const bg=btn.closest('.modal-bg'); const avatar=bg.querySelector('#setAvatar').value.trim();
+  await api('/api/profile/update', 'POST', { avatar }); me.avatar = avatar; updateMyProfile(); bg.remove();
 }
 
 // --- ПАНЕЛЬ АДМИНА ---
 async function openAdminPanel(){
-  const bg=document.createElement('div');
-  bg.className='modal-bg';
-  bg.innerHTML=`<div class="modal" id="adminModal">
-    <h3>🛠 Панель Админа</h3>
-    <button style="background:#c22" onclick="emergencyClear()">🚨 ОЧИСТИТЬ ВСЕ СООБЩЕНИЯ</button>
-    
+  const bg=document.createElement('div'); bg.className='modal-bg';
+  bg.innerHTML=`<div class="modal"><h3>🛠 Админ</h3>
+    <button style="background:#c22" onclick="emergencyClear()">🚨 ОЧИСТИТЬ ВСЕ</button>
     <hr style="margin:15px 0;border:none;border-top:1px solid #eee">
-    <h4>Заявки на регистрацию</h4>
-    <div id="reqList" style="font-size:13px">Загрузка...</div>
-
+    <h4>Заявки</h4><div id="reqList">Загрузка...</div>
     <hr style="margin:15px 0;border:none;border-top:1px solid #eee">
-    <h4>Пользователи</h4>
-    <div id="userManageList" style="font-size:13px">Загрузка...</div>
-    
-    <button class="close" style="margin-top:15px" onclick="this.parentElement.parentElement.remove()">Закрыть</button>
-  </div>`;
-  document.body.appendChild(bg);
-  loadAdminData();
+    <h4>Юзеры</h4><div id="userManageList">Загрузка...</div>
+    <button class="close" style="margin-top:15px" onclick="this.parentElement.parentElement.remove()">Закрыть</button></div>`;
+  document.body.appendChild(bg); loadAdminData();
 }
 
 async function loadAdminData() {
-  // Заявки
-  const {requests}=await api('/api/admin/requests');
-  const rl = $('reqList'); rl.innerHTML = '';
-  if(requests.length === 0) rl.innerHTML = '<div>Нет заявок</div>';
+  const {requests}=await api('/api/admin/requests'); const rl = $('reqList'); rl.innerHTML = '';
   requests.forEach(r => {
-    const d = document.createElement('div');
-    d.className = 'req-item';
-    if(r.status === 'done') {
-      d.innerHTML = `<b>${esc(r.contact)}</b><br>Статус: Выдано (${r.login} / ${r.password})`;
-    } else {
-      d.innerHTML = `<b>${esc(r.contact)}</b><br><button class="btn-req" onclick="openCreateUserForReq(${r.id}, '${esc(r.contact)}')">Создать аккаунт</button>`;
-    }
+    const d = document.createElement('div'); d.className = 'req-item';
+    d.innerHTML = r.status==='done' ? `<b>${esc(r.contact)}</b> (Выдано: ${r.login})` : `<b>${esc(r.contact)}</b><br><button class="btn-req" onclick="openCreateUserForReq(${r.id}, '${esc(r.contact)}')">Создать</button>`;
     rl.appendChild(d);
   });
 
-  // Пользователи
-  const {users}=await api('/api/admin/users');
-  const ul = $('userManageList'); ul.innerHTML = '';
+  const {users}=await api('/api/admin/users'); const ul = $('userManageList'); ul.innerHTML = '';
   users.forEach(u => {
-    if(u.username === 'tutu') return; // Себя не баним
-    const d = document.createElement('div');
-    d.className = 'user-item';
-    d.innerHTML = `<span>${esc(u.username)} ${u.role==='admin'?'(Админ)':''}</span>
-      ${u.banned ? `<button class="btn-unban" onclick="toggleBan(${u.id}, false)">Разбанить</button>` : `<button class="btn-ban" onclick="toggleBan(${u.id}, true)">Забанить</button>`}`;
+    if(u.username === 'tutu') return;
+    const d = document.createElement('div'); d.className = 'user-item';
+    d.innerHTML = `<span>${esc(u.username)}</span> ${u.banned ? `<button class="btn-unban" onclick="toggleBan(${u.id}, false)">Разбанить</button>` : `<button class="btn-ban" onclick="toggleBan(${u.id}, true)">Забанить</button>`}`;
     ul.appendChild(d);
   });
 }
-
 function openCreateUserForReq(reqId, contact) {
-  const modal = $('adminModal');
-  modal.innerHTML = `
-    <h3>Создать аккаунт</h3>
-    <p style="margin-bottom:10px;font-size:12px;color:#666">Для заявки: <b>${contact}</b></p>
-    <input id="newLogin" placeholder="Придумай логин">
-    <input id="newPass" placeholder="Придумай пароль">
-    <button onclick="createUserForReq(${reqId})">Создать и выдать</button>
-    <button class="close" onclick="openAdminPanel()">Назад</button>
-  `;
+  const bg=document.createElement('div'); bg.className='modal-bg';
+  bg.innerHTML=`<div class="modal"><h3>Создать аккаунт</h3><input id="newLogin" placeholder="Логин"><input id="newPass" placeholder="Пароль">
+    <button onclick="createUserForReq(${reqId}, this)">Создать</button><button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button></div>`;
+  document.body.appendChild(bg);
 }
-
-async function createUserForReq(reqId) {
-  const login = $('newLogin').value.trim();
-  const pass = $('newPass').value.trim();
-  if(!login || !pass) return alert('Заполни логин и пароль');
-  try {
-    await api('/api/admin/create-user', 'POST', { username: login, password: pass, requestId: reqId });
-    alert('Аккаунт создан! Пользователь может забрать данные на экране входа.');
-    openAdminPanel();
-  } catch(e) { alert(e.message); }
+async function createUserForReq(reqId, btn) {
+  const bg=btn.closest('.modal-bg'); const login = bg.querySelector('#newLogin').value.trim(), pass = bg.querySelector('#newPass').value.trim();
+  await api('/api/admin/create-user', 'POST', { username: login, password: pass, requestId: reqId });
+  alert('Аккаунт создан!'); bg.remove(); loadAdminData();
 }
-
-async function toggleBan(userId, ban) {
-  await api('/api/admin/ban', 'POST', { userId, banned: ban });
-  loadAdminData();
-}
-
-async function emergencyClear() {
-  if(!confirm('ВНИМАНИЕ! Это удалит ВСЕ сообщения и товары у ВСЕХ пользователей. Продолжить?')) return;
-  await api('/api/admin/emergency-clear', 'POST');
-  alert('Всё очищено.');
-}
-
-$('msg').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}});
+async function toggleBan(userId, ban) { await api('/api/admin/ban', 'POST', { userId, banned: ban }); loadAdminData(); }
+async function emergencyClear() { if(confirm('Удалить ВСЁ?')) { await api('/api/admin/emergency-clear', 'POST'); alert('Очищено'); } }
 </script>
 </body>
-  </html>
+</html>
