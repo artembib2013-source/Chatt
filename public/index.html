@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Главная группа</title>
+<title>Чат с группами</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hidden}
@@ -15,15 +15,23 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
 .card button{width:100%;padding:11px;margin-top:8px;background:#3390ec;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:15px}
 .card .sw{text-align:center;margin-top:10px;font-size:13px;color:#3390ec;cursor:pointer}
 .err{color:#c22;font-size:12px;margin-top:5px;min-height:16px}
-.note{font-size:11px;color:#888;margin-top:10px;line-height:1.4}
-#app{display:flex;flex-direction:column;height:100vh}
-#app header{background:#3390ec;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;font-weight:600}
-#app header small{font-weight:400;font-size:11px;opacity:.9}
-.tabs{display:flex;background:#fff;border-bottom:1px solid #ddd}
-.tabs button{flex:1;padding:11px;border:none;background:#fff;font-size:14px;color:#555;cursor:pointer;border-bottom:2px solid transparent}
-.tabs button.on{color:#3390ec;border-bottom-color:#3390ec;font-weight:600}
-.content{flex:1;overflow-y:auto}
-#chatBox{padding:12px;display:flex;flex-direction:column;gap:5px}
+
+#app{display:flex;height:100vh;flex-direction:column}
+@media(min-width:700px){#app{flex-direction:row}}
+.sidebar{background:#fff;border-right:1px solid #ddd;width:100%;height:100vh;display:flex;flex-direction:column}
+@media(min-width:700px){.sidebar{width:280px}}
+.sidebar header{background:#3390ec;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center}
+.chat-list{flex:1;overflow-y:auto}
+.chat-item{padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;justify-content:space-between}
+.chat-item.on{background:#e8f2fc}
+.chat-item .name{font-weight:600}
+.chat-item .count{font-size:11px;color:#888}
+.sidebar .actions{padding:10px;border-top:1px solid #eee}
+.sidebar .actions button{width:100%;padding:10px;background:#2ba84a;color:#fff;border:none;border-radius:8px;font-weight:600}
+
+.main{flex:1;display:flex;flex-direction:column;background:#dfe6ec;height:100vh}
+.main header{padding:12px;background:#fff;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center}
+#log{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:5px}
 .msg{max-width:80%;padding:7px 11px;background:#fff;border-radius:11px;word-wrap:break-word;box-shadow:0 1px 1px rgba(0,0,0,.05)}
 .msg.mine{align-self:flex-end;background:#effdde}
 .msg .who{font-size:11px;color:#3390ec;font-weight:600;margin-bottom:2px}
@@ -31,88 +39,99 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
 .comp{padding:8px;background:#fff;border-top:1px solid #ddd;display:flex;gap:6px}
 .comp input{flex:1;padding:9px 13px;border:1px solid #ccc;border-radius:18px;font-size:14px;outline:none}
 .comp button{padding:9px 16px;border:none;background:#3390ec;color:#fff;border-radius:18px;font-size:15px}
-.comp button:disabled{background:#ccc}
-#shopBox{padding:12px;display:grid;gap:10px}
+#shopBox{padding:12px;display:grid;gap:10px;overflow-y:auto;flex:1}
 .prod{background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
 .prod h4{font-size:15px;margin-bottom:4px}
-.prod .price{color:#2ba84a;font-weight:700;font-size:16px;margin:4px 0}
-.prod .desc{font-size:12px;color:#666;margin:4px 0}
-.prod .seller{font-size:11px;color:#999}
-.prod button{margin-top:8px;padding:8px 14px;border:none;border-radius:6px;background:#2ba84a;color:#fff;font-size:13px;font-weight:600;cursor:pointer}
-.prod button:disabled{background:#ccc}
+.prod .price{color:#2ba84a;font-weight:700;font-size:16px}
+.prod button{margin-top:8px;padding:8px 14px;border:none;border-radius:6px;background:#2ba84a;color:#fff;font-weight:600;cursor:pointer}
 .sell-form{padding:12px;background:#fff;margin:10px;border-radius:10px}
 .sell-form input,.sell-form textarea{width:100%;padding:9px;margin:5px 0;border:1px solid #ccc;border-radius:7px;font-size:14px;font-family:inherit}
-.sell-form textarea{min-height:60px;resize:vertical}
-.sell-form button{width:100%;padding:10px;margin-top:6px;background:#3390ec;color:#fff;border:none;border-radius:7px;font-weight:600;font-size:14px}
-.bc{position:fixed;top:12px;left:50%;transform:translateX(-50%);background:#d6274a;color:#fff;padding:10px 16px;border-radius:9px;z-index:99;font-size:13px;max-width:90vw}
-.dev-panel{position:fixed;inset:0;background:rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
-.dev-panel .box{background:#fff;padding:20px;border-radius:12px;max-width:400px;width:100%;max-height:80vh;overflow-y:auto}
-.dev-panel h3{margin-bottom:12px}
-.dev-panel textarea{width:100%;min-height:70px;padding:9px;border:1px solid #ccc;border-radius:7px;font-family:inherit;font-size:14px}
-.dev-panel button{margin-top:8px;padding:9px 14px;border:none;border-radius:7px;background:#3390ec;color:#fff;font-size:14px;cursor:pointer}
-.dev-panel .close{background:#eee;color:#333}
+.sell-form button{width:100%;padding:10px;margin-top:6px;background:#3390ec;color:#fff;border:none;border-radius:7px;font-weight:600}
+
+/* Мобильная адаптация: скрываем сайдбар при выборе чата */
+@media(max-width:699px){
+  .main{display:none}
+  #app.chat-open .sidebar{display:none}
+  #app.chat-open .main{display:flex}
+  #back-btn{display:inline-block!important}
+}
+#back-btn{display:none;background:none;border:none;font-size:20px;cursor:pointer;margin-right:8px}
+.modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
+.modal{background:#fff;padding:20px;border-radius:12px;width:100%;max-width:400px}
+.modal input{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px}
+.user-list{max-height:150px;overflow-y:auto;margin:10px 0;border:1px solid #eee;padding:5px;border-radius:8px}
+.user-item{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:14px}
+.modal button{padding:10px;width:100%;background:#3390ec;color:#fff;border:none;border-radius:8px;margin-top:8px}
+.modal .close{background:#eee;color:#333}
 </style>
 </head>
 <body>
 
+<!-- АВТОРИЗАЦИЯ -->
 <div id="auth">
   <div class="card">
     <h2 id="title">Вход</h2>
-    <input id="u" placeholder="Логин" autocomplete="username">
-    <input id="p" type="password" placeholder="Пароль" autocomplete="current-password">
+    <input id="u" placeholder="Логин">
+    <input id="p" type="password" placeholder="Пароль">
     <button onclick="doAuth()">Войти</button>
-    <div class="sw" onclick="toggle()"><span id="sw">Нет аккаунта? Регистрация</span></div>
+    <div class="sw" onclick="toggleAuth()"><span id="sw">Нет аккаунта? Регистрация</span></div>
     <div class="err" id="err"></div>
-    <div class="note">⚠️ Сообщения и товары видны администрации</div>
+    <div style="font-size:11px;color:#888;margin-top:10px">Админ: dev / dev12345</div>
   </div>
 </div>
 
+<!-- ПРИЛОЖЕНИЕ -->
 <div id="app" class="hidden">
-  <header>
-    <div>🏠 Главная группа</div>
-    <small id="who"></small>
-  </header>
-  <div class="tabs">
-    <button class="on" onclick="tab('chat')">💬 Чат</button>
-    <button onclick="tab('shop')">🛒 Магазин</button>
-    <button onclick="tab('sell')">📦 Продать</button>
-    <button id="devBtn" class="hidden" onclick="openDev()">🛠</button>
-  </div>
-
-  <div class="content" id="content">
-    <div id="chatBox"></div>
-    <div id="shopBox" class="hidden"></div>
-    <div id="sellBox" class="hidden">
-      <div class="sell-form">
-        <h3 style="margin-bottom:8px;font-size:16px">Выставить товар</h3>
-        <input id="ptitle" placeholder="Название товара">
-        <input id="pprice" type="number" placeholder="Цена, ₽">
-        <textarea id="pdescr" placeholder="Описание (необязательно)"></textarea>
-        <button onclick="sell()">Выставить</button>
-      </div>
+  <div class="sidebar">
+    <header>
+      <div id="me-name">Мой профиль</div>
+      <button onclick="logout()" style="background:none;border:none;color:#fff;cursor:pointer">Выйти</button>
+    </header>
+    <div class="chat-list" id="chatList"></div>
+    <div class="actions">
+      <button onclick="openCreateChat()">+ Создать группу</button>
     </div>
   </div>
 
-  <div class="comp" id="comp">
-    <input id="msg" placeholder="Сообщение..." autocomplete="off">
-    <button onclick="send()">➤</button>
-  </div>
-</div>
+  <div class="main">
+    <header>
+      <div style="display:flex;align-items:center">
+        <button id="back-btn" onclick="closeChat()">←</button>
+        <h3 id="chat-title">Выбери чат</h3>
+      </div>
+      <div>
+        <button onclick="tab('chat')" style="background:none;border:none;font-size:18px;cursor:pointer">💬</button>
+        <button onclick="tab('shop')" style="background:none;border:none;font-size:18px;cursor:pointer">🛒</button>
+        <button onclick="tab('sell')" style="background:none;border:none;font-size:18px;cursor:pointer">📦</button>
+      </div>
+    </header>
 
-<div id="devPanel" class="dev-panel hidden">
-  <div class="box">
-    <h3>🛠 Панель админа</h3>
-    <textarea id="bcText" placeholder="Текст рассылки..."></textarea>
-    <button onclick="broadcast()">📢 Отправить всем</button>
-    <button class="close" onclick="closeDev()">Закрыть</button>
-    <div id="devList" style="margin-top:12px;font-size:12px"></div>
+    <div id="log"></div>
+    
+    <div id="shopBox" class="hidden"></div>
+    
+    <div id="sellBox" class="hidden">
+      <div class="sell-form">
+        <h3>Выставить товар</h3>
+        <input id="ptitle" placeholder="Название">
+        <input id="pprice" type="number" placeholder="Цена, ₽">
+        <textarea id="pdescr" placeholder="Описание" rows="2"></textarea>
+        <button onclick="sell()">Выставить</button>
+      </div>
+    </div>
+
+    <div class="comp" id="comp">
+      <input id="msg" placeholder="Сообщение..." disabled>
+      <button onclick="send()" id="send-btn" disabled>➤</button>
+    </div>
   </div>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-let me=null, socket=null, authMode='login', curTab='chat';
+let me=null, socket=null, currentChatId=null, authMode='login';
+let allChats=[];
 
 async function api(url,m='GET',b){
   const r=await fetch(url,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});
@@ -123,10 +142,9 @@ async function api(url,m='GET',b){
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmtT(ts){return new Date(ts).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}
 
-function toggle(){authMode=authMode==='login'?'register':'login';
+function toggleAuth(){authMode=authMode==='login'?'register':'login';
 $('title').textContent=authMode==='login'?'Вход':'Регистрация';
-$('sw').textContent=authMode==='login'?'Нет аккаунта? Регистрация':'Уже есть? Войти';
-$('err').textContent=''}
+$('sw').textContent=authMode==='login'?'Нет аккаунта? Регистрация':'Уже есть? Войти';}
 
 async function doAuth(){
   $('err').textContent='';
@@ -135,107 +153,139 @@ async function doAuth(){
   try{
     const url=authMode==='login'?'/api/login':'/api/register';
     const {user}=await api(url,'POST',{username,password});
-    me=user;start();
+    me=user; start();
   }catch(e){$('err').textContent=e.message}
 }
+
+async function logout(){ await api('/api/logout','POST'); location.reload(); }
 
 async function start(){
   $('auth').classList.add('hidden');
   $('app').classList.remove('hidden');
-  $('who').textContent=me.username+(me.role==='dev'?' 🛡':'');
-  if(me.role==='dev')$('devBtn').classList.remove('hidden');
+  $('me-name').textContent=me.username;
+  
   socket=io();
-  socket.on('message',m=>{
-    const box=$('chatBox');
-    const d=document.createElement('div');
-    d.className='msg'+(m.user_id===me.id?' mine':'');
-    d.innerHTML=(m.username!=='Система'?`<div class="who">${esc(m.username)}</div>`:'')+esc(m.text)+`<div class="t">${fmtT(m.created_at)}</div>`;
-    box.appendChild(d);box.scrollTop=box.scrollHeight;
+  socket.on('message', m => {
+    if(m.chat_id === currentChatId) addMessageToUI(m);
   });
-  socket.on('broadcast',b=>showBC(b.text));
-  socket.on('new_product',()=>loadShop());
-  socket.on('product_deleted',()=>loadShop());
-  await loadChat();
-  await loadShop();
+  socket.on('new_chat_created', loadChats);
+  socket.on('new_product', loadShop);
+
+  await loadChats();
 }
 
-async function loadChat(){
-  const {messages}=await api('/api/messages');
-  const box=$('chatBox');box.innerHTML='';
-  messages.forEach(m=>{
+async function loadChats(){
+  const {chats}=await api('/api/chats');
+  allChats=chats;
+  const list=$('chatList');list.innerHTML='';
+  chats.forEach(c=>{
     const d=document.createElement('div');
-    d.className='msg'+(m.user_id===me.id?' mine':'');
-    d.innerHTML=(m.username!=='Система'?`<div class="who">${esc(m.username)}</div>`:'')+esc(m.text)+`<div class="t">${fmtT(m.created_at)}</div>`;
-    box.appendChild(d);
-  });
-  box.scrollTop=box.scrollHeight;
-}
-
-async function loadShop(){
-  const {products}=await api('/api/products');
-  const box=$('shopBox');box.innerHTML='';
-  if(!products.length){box.innerHTML='<div style="text-align:center;color:#888;padding:20px">Пока нет товаров</div>';return}
-  products.forEach(p=>{
-    const d=document.createElement('div');
-    d.className='prod';
-    d.innerHTML=`<h4>${esc(p.title)}</h4><div class="price">${p.price} ₽</div>
-    <div class="desc">${esc(p.descr||'')}</div>
-    <div class="seller">Продавец: ${esc(p.seller)}</div>
-    ${p.seller_id!==me.id?`<button onclick="buy(${p.id})">Купить</button>`:'<div style="font-size:11px;color:#999;margin-top:6px">Твой товар</div>'}`;
-    box.appendChild(d);
+    d.className='chat-item'+(c.id===currentChatId?' on':'');
+    d.innerHTML=`<div class="name">${esc(c.name)}</div><div class="count">${c.members_count} чел.</div>`;
+    d.onclick=()=>openChat(c.id, c.name);
+    list.appendChild(d);
   });
 }
 
-async function sell(){
-  const title=$('ptitle').value.trim(), price=$('pprice').value, descr=$('pdescr').value.trim();
-  if(!title||!price)return alert('Заполни название и цену');
-  await api('/api/products','POST',{title,price,descr});
-  $('ptitle').value='';$('pprice').value='';$('pdescr').value='';
-  alert('Товар выставлен!');
-  tab('shop');loadShop();
+async function openChat(id, name){
+  currentChatId=id;
+  $('chat-title').textContent=name;
+  $('app').classList.add('chat-open');
+  $('log').classList.remove('hidden');
+  $('comp').style.display='flex';
+  $('shopBox').classList.add('hidden');
+  $('sellBox').classList.add('hidden');
+  
+  socket.emit('join_chat', id); // подписываемся на комнату
+  const {messages}=await api('/api/messages?chat_id='+id);
+  $('log').innerHTML='';
+  messages.forEach(addMessageToUI);
+  loadChats(); // обновить подсветку
 }
 
-async function buy(id){
-  if(!confirm('Купить этот товар?'))return;
-  try{
-    const {seller}=await api('/api/products/'+id+'/buy','POST');
-    alert('Куплено! Свяжись с продавцом '+seller+' в чате');
-    loadShop();
-  }catch(e){alert(e.message)}
+function closeChat(){$('app').classList.remove('chat-open'); currentChatId=null;}
+
+function addMessageToUI(m){
+  const d=document.createElement('div');
+  d.className='msg'+(m.user_id===me.id?' mine':'');
+  d.innerHTML=(m.username!=='Система'?`<div class="who">${esc(m.username)}</div>`:'')+esc(m.text)+`<div class="t">${fmtT(m.created_at)}</div>`;
+  $('log').appendChild(d);
+  $('log').scrollTop=$('log').scrollHeight;
+}
+
+function send(){
+  const t=$('msg').value.trim();
+  if(!t||!currentChatId)return;
+  socket.emit('message',{chatId:currentChatId, text:t});
+  $('msg').value='';$('msg').focus();
 }
 
 function tab(t){
-  curTab=t;
-  document.querySelectorAll('.tabs button').forEach((b,i)=>b.classList.toggle('on',
-    (i===0&&t==='chat')||(i===1&&t==='shop')||(i===2&&t==='sell')));
-  $('chatBox').classList.toggle('hidden',t!=='chat');
+  if(!currentChatId)return alert('Сначала выбери чат');
+  $('log').classList.toggle('hidden',t!=='chat');
   $('shopBox').classList.toggle('hidden',t!=='shop');
   $('sellBox').classList.toggle('hidden',t!=='sell');
   $('comp').style.display=t==='chat'?'flex':'none';
   if(t==='shop')loadShop();
 }
 
-function send(){
-  const t=$('msg').value.trim();
-  if(!t)return;
-  socket.emit('message',{text:t});
-  $('msg').value='';$('msg').focus();
+// --- МОДАЛКА СОЗДАНИЯ ГРУППЫ ---
+async function openCreateChat(){
+  const {users}=await api('/api/users');
+  const bg=document.createElement('div');
+  bg.className='modal-bg';
+  bg.innerHTML=`
+    <div class="modal">
+      <h3>Новая группа</h3>
+      <input id="gname" placeholder="Название группы">
+      <div class="user-list">
+        ${users.map(u=>`<label class="user-item"><input type="checkbox" value="${u.id}"> ${esc(u.username)}</label>`).join('')}
+      </div>
+      <button onclick="createGroup(this)">Создать</button>
+      <button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button>
+    </div>
+  `;
+  document.body.appendChild(bg);
+}
+
+async function createGroup(btn){
+  const bg=btn.closest('.modal-bg');
+  const name=bg.querySelector('#gname').value.trim();
+  const memberIds=[...bg.querySelectorAll('input:checked')].map(i=>+i.value);
+  if(!name)return alert('Введи название');
+  await api('/api/chats','POST',{name, memberIds});
+  bg.remove();
+  await loadChats();
+}
+
+// --- МАГАЗИН (глобальный) ---
+async function loadShop(){
+  const {products}=await api('/api/products');
+  const box=$('shopBox');box.innerHTML='';
+  if(!products.length){box.innerHTML='<div style="text-align:center;color:#888;padding:20px">Товаров нет</div>';return}
+  products.forEach(p=>{
+    const d=document.createElement('div');
+    d.className='prod';
+    d.innerHTML=`<h4>${esc(p.title)}</h4><div class="price">${p.price} ₽</div>
+    <div style="font-size:12px;color:#666">${esc(p.descr||'')}</div>
+    <div style="font-size:11px;color:#999;margin-top:4px">Продавец: ${esc(p.seller)}</div>
+    ${p.seller!==me.username?`<button onclick="buy(${p.id})">Купить</button>`:'<div style="font-size:11px;color:#999;margin-top:6px">Твой товар</div>'}`;
+    box.appendChild(d);
+  });
+}
+async function sell(){
+  const title=$('ptitle').value.trim(), price=$('pprice').value, descr=$('pdescr').value.trim();
+  if(!title||!price)return alert('Заполни поля');
+  await api('/api/products','POST',{title,price,descr});
+  $('ptitle').value='';$('pprice').value='';$('pdescr').value='';
+  alert('Товар выставлен!'); tab('shop');
+}
+async function buy(id){
+  if(!confirm('Купить?'))return;
+  await api('/api/products/'+id+'/buy','POST');
+  alert('Куплено!'); loadShop();
 }
 $('msg').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}});
-
-function showBC(t){
-  const d=document.createElement('div');
-  d.className='bc';d.textContent='📢 '+t;
-  document.body.appendChild(d);setTimeout(()=>d.remove(),7000);
-}
-
-function openDev(){$('devPanel').classList.remove('hidden')}
-function closeDev(){$('devPanel').classList.add('hidden')}
-async function broadcast(){
-  const t=$('bcText').value.trim();if(!t)return;
-  await api('/api/dev/broadcast','POST',{text:t});
-  $('bcText').value='';alert('Отправлено');
-}
 </script>
 </body>
-</html>
+  </html>
