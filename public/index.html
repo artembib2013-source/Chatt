@@ -18,13 +18,13 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 .err{color:#c22;font-size:12px;margin-top:5px;min-height:16px;text-align:center}
 
 /* Окно заявки (чат-бот) */
-#interviewBox{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:380px;box-shadow:0 8px 30px rgba(0,0,0,.2);display:flex;flex-direction:column;height:80vh;max-height:600px}
+#interviewBox{background:#fff;border-radius:12px;padding:15px;width:100%;max-width:380px;box-shadow:0 8px 30px rgba(0,0,0,.2);display:flex;flex-direction:column;height:70vh;max-height:500px}
 #chatInterview{flex:1;overflow-y:auto;background:#f0f4f8;padding:10px;border-radius:8px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px;font-size:13px}
 .bot-msg{background:#fff;padding:8px 12px;border-radius:10px;align-self:flex-start;box-shadow:0 1px 1px rgba(0,0,0,.05);max-width:90%}
 .user-msg{background:#d1e7ff;padding:8px 12px;border-radius:10px;align-self:flex-end;max-width:90%}
-#interviewInput{display:flex;gap:5px}
+#interviewInput{display:flex;gap:5px;flex-shrink:0;}
 #interviewInput input{flex:1;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:16px}
-#interviewInput button{padding:10px 15px;background:#3390ec;color:#fff;border:none;border-radius:8px;cursor:pointer}
+#interviewInput button{padding:10px 15px;background:#3390ec;color:#fff;border:none;border-radius:8px;cursor:pointer;white-space:nowrap}
 
 /* Основной интерфейс */
 #app{display:flex;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
@@ -111,13 +111,16 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
         <button onclick="showLogin()" style="background:none;color:#666;font-size:20px;width:auto;padding:0;margin:0">×</button>
       </div>
       <div id="chatInterview"></div>
+      
       <div id="interviewInput" class="hidden">
         <input id="botInput" placeholder="Введи ответ..." autocomplete="off">
         <button onclick="botSend()">Отправить</button>
       </div>
+
       <div id="waitingMsg" class="hidden" style="text-align:center;color:#666;font-size:13px;margin-top:10px">
         ⏳ Ожидайте, администратор выдаст вам логин и пароль...
       </div>
+
       <div id="successMsg" class="hidden" style="text-align:center;margin-top:10px">
         <p style="color:#2ba84a;font-weight:bold;margin-bottom:10px">✅ Аккаунт создан!</p>
         <div style="background:#fff;padding:10px;border-radius:8px;margin-bottom:10px">
@@ -125,6 +128,9 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
         </div>
         <button onclick="autoLogin()" style="background:#2ba84a">Войти в аккаунт</button>
       </div>
+
+      <!-- КНОПКА СБРОСА -->
+      <button id="resetBtn" onclick="resetRequest()" style="margin-top:10px;background:#e74c3c;font-size:12px;padding:8px">Сбросить заявку и начать заново</button>
     </div>
   </div>
 </div>
@@ -222,9 +228,16 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function fmtT(ts){return new Date(ts).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}
 
 function focusMsg() {
-  if (!$('msg').disabled && !currentChatId === null) {
-    $('msg').focus();
-  }
+  if (!$('msg').disabled && !currentChatId === null) $('msg').focus();
+}
+
+// --- ФУНКЦИЯ СБРОСА ---
+function resetRequest() {
+  if(!confirm('Вы уверены, что хотите сбросить заявку и начать заново?')) return;
+  localStorage.removeItem('reqData');
+  reqData = {};
+  if(socket) socket.disconnect();
+  startRequestFlow();
 }
 
 // --- БОТ-ЗАЯВКА ---
@@ -243,6 +256,9 @@ function userMsg(text) {
 async function startRequestFlow() {
   $('loginCard').classList.add('hidden');
   $('requestCard').classList.remove('hidden');
+  $('successMsg').classList.add('hidden');
+  $('waitingMsg').classList.add('hidden');
+  $('chatInterview').classList.remove('hidden');
   
   if (reqData.status === 'waiting') {
     $('chatInterview').classList.add('hidden');
@@ -270,9 +286,7 @@ async function botSend() {
   else if (botStep === 2) { reqData.school = val; saveReqData(); botStep = 3; botMsg("В каком ты классе?"); }
   else if (botStep === 3) { reqData.class_name = val; saveReqData(); botStep = 4; botMsg("Откуда узнал о нашем сайте?"); }
   else if (botStep === 4) { 
-    reqData.source = val; saveReqData(); 
-    botStep = 5; 
-    botMsg("Какой у тебя номер телефона? (Для связи)");
+    reqData.source = val; saveReqData(); botStep = 5; botMsg("Какой у тебя номер телефона? (Для связи)");
   }
   else if (botStep === 5) {
     reqData.contact = val; saveReqData();
@@ -291,19 +305,13 @@ async function botSend() {
   }
 }
 
-// ИСПРАВЛЕННАЯ ФУНКЦИЯ ОЖИДАНИЯ
 function checkRequestSocket(contact) {
-  if(socket) socket.disconnect(); // Отключаем старый сокет, если был
+  if(socket) socket.disconnect();
   socket = io(); 
-  
-  // Входим в комнату ожидания
-  socket.on('connect', () => {
-    socket.emit('join_waiting', contact);
-  });
-
-  // Слушаем событие одобрения
+  socket.on('connect', () => { socket.emit('join_waiting', contact); });
   socket.on('request_approved', (data) => {
     $('waitingMsg').classList.add('hidden');
+    $('chatInterview').classList.add('hidden');
     $('successMsg').classList.remove('hidden');
     $('resLogin').textContent = data.login;
     $('resPass').textContent = data.password;
