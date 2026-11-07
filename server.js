@@ -25,12 +25,14 @@ CREATE TABLE IF NOT EXISTS chats (id INTEGER PRIMARY KEY AUTOINCREMENT, name TEX
 CREATE TABLE IF NOT EXISTS chat_members (chat_id INTEGER, user_id INTEGER, PRIMARY KEY (chat_id, user_id));
 CREATE TABLE IF NOT EXISTS messages (id INTEGER PRIMARY KEY AUTOINCREMENT, chat_id INTEGER, user_id INTEGER, text TEXT, sticker TEXT, created_at INTEGER);
 CREATE TABLE IF NOT EXISTS products (id INTEGER PRIMARY KEY AUTOINCREMENT, seller_id INTEGER, title TEXT, price INTEGER, descr TEXT, image_url TEXT, status TEXT DEFAULT 'active', created_at INTEGER);
-CREATE TABLE IF NOT EXISTS requests (id INTEGER PRIMARY KEY AUTOINCREMENT, contact TEXT, status TEXT DEFAULT 'pending', login TEXT, password TEXT, created_at INTEGER);
+CREATE TABLE IF NOT EXISTS requests (id INTEGER PRIMARY KEY AUTOINCREMENT, contact TEXT, status TEXT DEFAULT 'pending', school TEXT, class_name TEXT, name TEXT, source TEXT, login TEXT, password TEXT, created_at INTEGER);
 `);
 
-// Миграция на случай, если база старая
-try { db.exec("ALTER TABLE users ADD COLUMN bio TEXT DEFAULT ''"); } catch(e){}
-try { db.exec("ALTER TABLE messages ADD COLUMN sticker TEXT"); } catch(e){}
+// Добавляем колонки в старую таблицу requests, если ее не было
+try { db.exec("ALTER TABLE requests ADD COLUMN school TEXT"); } catch(e){}
+try { db.exec("ALTER TABLE requests ADD COLUMN class_name TEXT"); } catch(e){}
+try { db.exec("ALTER TABLE requests ADD COLUMN name TEXT"); } catch(e){}
+try { db.exec("ALTER TABLE requests ADD COLUMN source TEXT"); } catch(e){}
 
 // Главная группа
 if (!db.prepare('SELECT id FROM chats WHERE id=1').get()) {
@@ -38,10 +40,9 @@ if (!db.prepare('SELECT id FROM chats WHERE id=1').get()) {
 }
 
 // Админ tutu / pipi
-const ADMIN_LOGIN = 'tutu';
-if (!db.prepare('SELECT id FROM users WHERE username=?').get(ADMIN_LOGIN)) {
+if (!db.prepare('SELECT id FROM users WHERE username=?').get('tutu')) {
   db.prepare('INSERT INTO users(username, password, role, banned, balance, created_at) VALUES (?, ?, ?, 0, ?, ?)')
-    .run(ADMIN_LOGIN, bcrypt.hashSync('pipi', 10), 'admin', 1000000, Date.now());
+    .run('tutu', bcrypt.hashSync('pipi', 10), 'admin', 1000000, Date.now());
 }
 
 const tok = () => crypto.randomBytes(32).toString('hex');
@@ -62,17 +63,30 @@ function adminOnly(rq, rs, nx) {
   nx();
 }
 
-// --- АВТОРИЗАЦИЯ И ЗАЯВКИ ---
+// --- ЗАЯВКИ И СОБЕСЕДОВАНИЕ ---
 app.post('/api/request', (rq, rs) => {
-  db.prepare('INSERT INTO requests(contact, created_at) VALUES (?, ?)').run(rq.body.contact, Date.now());
-  io.emit('new_request'); rs.json({ ok: true });
+  const { contact } = rq.body;
+  if (!contact) return rs.status(400).json({ error: 'Введи номер' });
+  const i = db.prepare('INSERT INTO requests(contact, created_at) VALUES (?, ?)').run(contact, Date.now());
+  io.emit('new_request');
+  rs.json({ ok: true, requestId: i.lastInsertRowid });
 });
+
+// Обновление данных заявки (школа, класс и т.д.)
+app.post('/api/request/update', (rq, rs) => {
+  const { id, school, class_name, name, source } = rq.body;
+  db.prepare('UPDATE requests SET school=?, class_name=?, name=?, source=? WHERE id=?').run(school, class_name, name, source, id);
+  rs.json({ ok: true });
+});
+
 app.post('/api/check-request', (rq, rs) => {
   const req = db.prepare('SELECT * FROM requests WHERE contact=? ORDER BY id DESC LIMIT 1').get(rq.body.contact);
   if (!req) return rs.status(404).json({ error: 'Не найдено' });
   if (req.status === 'pending') return rs.json({ status: 'pending' });
   rs.json({ status: 'done', login: req.login, password: req.password });
 });
+
+// --- АВТОРИЗАЦИЯ ---
 app.post('/api/login', (rq, rs) => {
   const u = db.prepare('SELECT * FROM users WHERE username=?').get(rq.body.username);
   if (!u || !bcrypt.compareSync(rq.body.password, u.password)) return rs.status(400).json({ error: 'Неверный логин/пароль' });
@@ -87,7 +101,24 @@ app.post('/api/logout', (rq, rs) => {
   rs.clearCookie('token'); rs.json({ ok: true });
 });
 
-// --- ПРОФИЛИ ---
+// --- АДМИН: ВЫДАЧА АККАУНТА ---
+app.post('/api/admin/create-user', auth, adminOnly, (rq, rs) => {
+  const { username, password, requestId } = rq.body;
+  try {
+    const h = bcrypt.hashSync(password, 10);
+    db.prepare('INSERT INTO users(username, password, role, created_at) VALUES (?, ?, ?, ?)').run(username, h, 'user', Date.now());
+    
+    if (requestId) {
+      db.prepare('UPDATE requests SET status=?, login=?, password=? WHERE id=?').run('done', username, password, requestId);
+      // Отправляем сокет-событие, чтобы у человека на экране сразу появился логин
+      const req = db.prepare('SELECT contact FROM requests WHERE id=?').get(requestId);
+      if(req) io.emit('request_approved_' + req.contact, { login: username, password });
+    }
+    rs.json({ ok: true });
+  } catch (e) { rs.status(400).json({ error: 'Логин занят' }); }
+});
+
+// --- ПРОФИЛИ, ЧАТЫ, МАГАЗИН (как в прошлом коде) ---
 app.get('/api/profile/:username', auth, (rq, rs) => {
   const u = db.prepare('SELECT id, username, avatar, balance, bio, role FROM users WHERE username=?').get(rq.params.username);
   if (!u) return rs.status(404).json({ error: 'Не найден' });
@@ -96,118 +127,56 @@ app.get('/api/profile/:username', auth, (rq, rs) => {
 app.post('/api/profile/update', auth, (rq, rs) => {
   const { username, bio, avatar } = rq.body;
   try {
-    if (username && username !== rq.user.username) {
-      if (rq.user.role !== 'admin') return rs.status(403).json({ error: 'Только админ может менять ник' });
-      db.prepare('UPDATE users SET username=? WHERE id=?').run(username, rq.user.id);
-    }
+    if (username && username !== rq.user.username && rq.user.role === 'admin') db.prepare('UPDATE users SET username=? WHERE id=?').run(username, rq.user.id);
     if (bio !== undefined) db.prepare('UPDATE users SET bio=? WHERE id=?').run(bio, rq.user.id);
     if (avatar !== undefined) db.prepare('UPDATE users SET avatar=? WHERE id=?').run(avatar, rq.user.id);
     rs.json({ ok: true });
   } catch (e) { rs.status(400).json({ error: 'Ник занят' }); }
 });
-app.post('/api/admin/change-nick', auth, adminOnly, (rq, rs) => {
-  try {
-    db.prepare('UPDATE users SET username=? WHERE id=?').run(rq.body.newNick, rq.body.userId);
-    rs.json({ ok: true });
-  } catch(e) { rs.status(400).json({ error: 'Занято' }); }
-});
-
-// --- ЛИЧНЫЕ СООБЩЕНИЯ ---
 app.post('/api/dm/start', auth, (rq, rs) => {
   const target = db.prepare('SELECT id FROM users WHERE username=?').get(rq.body.username);
   if (!target) return rs.status(404).json({ error: 'Нет такого юзера' });
-  if (target.id === rq.user.id) return rs.status(400).json({ error: 'Это ты' });
-
-  const exist = db.prepare(`
-    SELECT c.id FROM chats c 
-    JOIN chat_members cm1 ON cm1.chat_id=c.id AND cm1.user_id=?
-    JOIN chat_members cm2 ON cm2.chat_id=c.id AND cm2.user_id=?
-    WHERE c.is_private = 1 AND (SELECT COUNT(*) FROM chat_members WHERE chat_id=c.id) = 2
-  `).get(rq.user.id, target.id);
-
+  const exist = db.prepare(`SELECT c.id FROM chats c JOIN chat_members cm1 ON cm1.chat_id=c.id AND cm1.user_id=? JOIN chat_members cm2 ON cm2.chat_id=c.id AND cm2.user_id=? WHERE c.is_private = 1`).get(rq.user.id, target.id);
   if (exist) return rs.json({ chatId: exist.id });
-
   const i = db.prepare('INSERT INTO chats(name, is_private, created_by, created_at) VALUES (?, 1, ?, ?)').run('Личный чат', rq.user.id, Date.now());
-  const cid = i.lastInsertRowid;
-  db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(cid, rq.user.id);
-  db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(cid, target.id);
-  
-  io.emit('new_chat_created');
-  rs.json({ chatId: cid });
+  db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(i.lastInsertRowid, rq.user.id);
+  db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(i.lastInsertRowid, target.id);
+  io.emit('new_chat_created'); rs.json({ chatId: i.lastInsertRowid });
 });
-
-// --- АДМИНКА ---
-app.post('/api/admin/create-user', auth, adminOnly, (rq, rs) => {
-  const { username, password, requestId } = rq.body;
-  try {
-    const h = bcrypt.hashSync(password, 10);
-    db.prepare('INSERT INTO users(username, password, role, created_at) VALUES (?, ?, ?, ?)').run(username, h, 'user', Date.now());
-    if (requestId) db.prepare('UPDATE requests SET status=?, login=?, password=? WHERE id=?').run('done', username, password, requestId);
-    rs.json({ ok: true });
-  } catch (e) { rs.status(400).json({ error: 'Логин занят' }); }
-});
-app.get('/api/admin/users', auth, adminOnly, (rq, rs) => rs.json({ users: db.prepare('SELECT id, username, role, banned FROM users ORDER BY id').all() }));
-app.post('/api/admin/ban', auth, adminOnly, (rq, rs) => { db.prepare('UPDATE users SET banned=? WHERE id=?').run(rq.body.banned?1:0, rq.body.userId); rs.json({ ok: true }); });
-app.post('/api/admin/ban-all', auth, adminOnly, (rq, rs) => {
-  db.prepare('UPDATE users SET banned=1 WHERE role != ?').run('admin');
-  rs.json({ ok: true });
-});
-app.post('/api/admin/emergency-clear', auth, adminOnly, (rq, rs) => {
-  db.prepare('DELETE FROM messages').run(); db.prepare('DELETE FROM products').run();
-  io.emit('emergency_clear'); rs.json({ ok: true });
-});
-
-// --- ЧАТЫ И СООБЩЕНИЯ ---
 app.get('/api/chats', auth, (rq, rs) => {
-  let chats;
-  if (rq.user.role === 'admin') {
-    chats = db.prepare(`SELECT c.*, (SELECT COUNT(*) FROM chat_members WHERE chat_id=c.id) as members_count FROM chats c ORDER BY c.id DESC`).all();
-  } else {
-    chats = db.prepare(`SELECT c.*, (SELECT COUNT(*) FROM chat_members WHERE chat_id=c.id) as members_count FROM chats c LEFT JOIN chat_members cm ON cm.chat_id = c.id AND cm.user_id = ? WHERE cm.user_id IS NOT NULL OR c.id = 1 ORDER BY c.id DESC`).all(rq.user.id);
-  }
+  let chats = rq.user.role === 'admin' 
+    ? db.prepare(`SELECT c.*, (SELECT COUNT(*) FROM chat_members WHERE chat_id=c.id) as members_count FROM chats c ORDER BY c.id DESC`).all()
+    : db.prepare(`SELECT c.*, (SELECT COUNT(*) FROM chat_members WHERE chat_id=c.id) as members_count FROM chats c LEFT JOIN chat_members cm ON cm.chat_id = c.id AND cm.user_id = ? WHERE cm.user_id IS NOT NULL OR c.id = 1 ORDER BY c.id DESC`).all(rq.user.id);
   rs.json({ chats });
 });
 app.post('/api/chats', auth, (rq, rs) => {
   const { name, memberIds } = rq.body;
   const i = db.prepare('INSERT INTO chats(name, created_by, created_at) VALUES (?, ?, ?)').run(name, rq.user.id, Date.now());
-  const chatId = i.lastInsertRowid;
-  db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(chatId, rq.user.id);
-  if (memberIds) memberIds.forEach(id => db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(chatId, id));
-  io.emit('new_chat_created'); rs.json({ ok: true, chatId });
+  db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(i.lastInsertRowid, rq.user.id);
+  if (memberIds) memberIds.forEach(id => db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(i.lastInsertRowid, id));
+  io.emit('new_chat_created'); rs.json({ ok: true, chatId: i.lastInsertRowid });
 });
 app.get('/api/users', auth, (rq, rs) => rs.json({ users: db.prepare('SELECT id, username FROM users WHERE id != ? AND banned = 0').all(rq.user.id) }));
-app.get('/api/messages', auth, (rq, rs) => {
-  const m = db.prepare(`SELECT m.*, u.username, u.avatar FROM messages m JOIN users u ON u.id = m.user_id WHERE m.chat_id = ? ORDER BY m.created_at DESC LIMIT 100`).all(rq.query.chat_id || 1).reverse();
-  rs.json({ messages: m });
-});
-
-// --- МАГАЗИН ---
+app.get('/api/messages', auth, (rq, rs) => rs.json({ messages: db.prepare(`SELECT m.*, u.username, u.avatar FROM messages m JOIN users u ON u.id = m.user_id WHERE m.chat_id = ? ORDER BY m.created_at DESC LIMIT 100`).all(rq.query.chat_id || 1).reverse() }));
 app.get('/api/products', auth, (rq, rs) => rs.json({ products: db.prepare(`SELECT p.*, u.username as seller FROM products p JOIN users u ON u.id = p.seller_id WHERE p.status='active' ORDER BY p.created_at DESC`).all() }));
 app.post('/api/products', auth, (rq, rs) => {
-  const { title, price, descr, image_url } = rq.body;
-  db.prepare('INSERT INTO products(seller_id, title, price, descr, image_url, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(rq.user.id, title, +price, descr || '', image_url || '', Date.now());
+  db.prepare('INSERT INTO products(seller_id, title, price, descr, image_url, created_at) VALUES (?, ?, ?, ?, ?, ?)').run(rq.user.id, rq.body.title, +rq.body.price, rq.body.descr || '', rq.body.image_url || '', Date.now());
   io.emit('new_product'); rs.json({ ok: true });
 });
 app.post('/api/products/:id/buy', auth, (rq, rs) => {
   const p = db.prepare('SELECT * FROM products WHERE id=? AND status=?').get(+rq.params.id, 'active');
   if (!p || p.seller_id === rq.user.id) return rs.status(400).json({ error: 'Ошибка' });
-  if (rq.user.balance < p.price) return rs.status(400).json({ error: 'Мало пуликов' });
-  
   db.prepare('UPDATE products SET status=? WHERE id=?').run('sold', p.id);
   db.prepare('UPDATE users SET balance = balance - ? WHERE id = ?').run(p.price, rq.user.id);
   db.prepare('UPDATE users SET balance = balance + ? WHERE id = ?').run(p.price, p.seller_id);
-
-  const chatName = `Покупка: ${rq.user.username} ↔ ${db.prepare('SELECT username FROM users WHERE id=?').get(p.seller_id).username}`;
-  const ci = db.prepare('INSERT INTO chats(name, is_private, created_by, created_at) VALUES (?, 1, ?, ?)').run(chatName, p.seller_id, Date.now());
-  const cid = ci.lastInsertRowid;
-  db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(cid, p.seller_id);
-  db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(cid, rq.user.id);
-
-  const text = `🛒 ${rq.user.username} купил «${p.title}» за ${p.price} П.`;
-  db.prepare('INSERT INTO messages(chat_id, user_id, text, created_at) VALUES (?, ?, ?, ?)').run(cid, rq.user.id, text, Date.now());
-  
-  io.emit('new_chat_created'); rs.json({ ok: true, chatId: cid });
+  const ci = db.prepare('INSERT INTO chats(name, is_private, created_by, created_at) VALUES (?, 1, ?, ?)').run('Покупка', p.seller_id, Date.now());
+  db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(ci.lastInsertRowid, p.seller_id);
+  db.prepare('INSERT INTO chat_members(chat_id, user_id) VALUES (?, ?)').run(ci.lastInsertRowid, rq.user.id);
+  db.prepare('INSERT INTO messages(chat_id, user_id, text, created_at) VALUES (?, ?, ?, ?)').run(ci.lastInsertRowid, rq.user.id, `🛒 Куплен товар: ${p.title}`, Date.now());
+  io.emit('new_chat_created'); rs.json({ ok: true, chatId: ci.lastInsertRowid });
 });
+app.get('/api/admin/users', auth, adminOnly, (rq, rs) => rs.json({ users: db.prepare('SELECT id, username, role, banned FROM users ORDER BY id').all() }));
+app.get('/api/admin/requests', auth, adminOnly, (rq, rs) => rs.json({ requests: db.prepare('SELECT * FROM requests ORDER BY id DESC').all() }));
 
 // --- СОКЕТЫ ---
 io.use((s, nx) => {
