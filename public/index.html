@@ -2,69 +2,71 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Telegram Clone</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hidden}
+body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dvh;overflow:hidden;position:fixed;width:100%}
 .hidden{display:none!important}
+
 /* Стили авторизации */
-#auth{display:flex;align-items:center;justify-content:center;height:100vh;padding:16px;background:#3390ec}
+#auth{display:flex;align-items:center;justify-content:center;height:100vh;height:100dvh;padding:16px;background:#3390ec;overflow-y:auto}
 .card{background:#fff;padding:22px;border-radius:12px;width:100%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.2)}
 .card h2{margin-bottom:14px;font-size:19px;text-align:center;color:#3390ec}
-.card input{width:100%;padding:11px;margin:5px 0;border:1px solid #ccc;border-radius:8px;font-size:15px;outline:none}
+.card input{width:100%;padding:11px;margin:5px 0;border:1px solid #ccc;border-radius:8px;font-size:16px;outline:none}
 .card button{width:100%;padding:11px;margin-top:8px;background:#3390ec;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:15px;cursor:pointer}
 .card .sw{text-align:center;margin-top:10px;font-size:13px;color:#3390ec;cursor:pointer}
 .err{color:#c22;font-size:12px;margin-top:5px;min-height:16px;text-align:center}
 
 /* Интерфейс */
-#app{display:flex;height:100vh;flex-direction:column}
+#app{display:flex;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
 @media(min-width:700px){#app{flex-direction:row}}
-.sidebar{background:#fff;border-right:1px solid #ddd;width:100%;height:100vh;display:flex;flex-direction:column}
+.sidebar{background:#fff;border-right:1px solid #ddd;width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
 @media(min-width:700px){.sidebar{width:300px}}
-.sidebar header{background:#3390ec;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center}
+.sidebar header{background:#3390ec;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
 .user-profile{display:flex;align-items:center;gap:10px}
 .avatar{width:40px;height:40px;border-radius:50%;background:#ccc;object-fit:cover}
-.chat-list{flex:1;overflow-y:auto}
+.chat-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .chat-item{padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;align-items:center;gap:10px}
 .chat-item.on{background:#e8f2fc}
 .chat-item .name{font-weight:600}
 .chat-item .count{font-size:11px;color:#888}
-.sidebar .actions{padding:10px;border-top:1px solid #eee;display:flex;flex-direction:column;gap:5px}
-.sidebar .actions button{width:100%;padding:10px;background:#2ba84a;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer}
+.sidebar .actions{padding:10px;border-top:1px solid #eee;display:flex;flex-direction:column;gap:5px;flex-shrink:0}
+.sidebar .actions button{width:100%;padding:10px;background:#2ba84a;color:#fff;border:none;border-radius:8px;font-weight:600;cursor:pointer;font-size:13px}
 .sidebar .actions .admin-btn{background:#d6274a}
 
-.main{flex:1;display:flex;flex-direction:column;background:#dfe6ec;height:100vh}
-.main header{padding:12px;background:#fff;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center}
-#log{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px}
+.main{flex:1;display:flex;flex-direction:column;background:#dfe6ec;height:100vh;height:100dvh;overflow:hidden}
+.main header{padding:12px;background:#fff;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
+#log{flex:1;overflow-y:auto;padding:12px;display:flex;flex-direction:column;gap:10px;-webkit-overflow-scrolling:touch}
 .msg{display:flex;gap:8px;max-width:85%}
 .msg.mine{align-self:flex-end;flex-direction:row-reverse}
 .msg .bubble{padding:8px 12px;background:#fff;border-radius:12px;word-wrap:break-word;box-shadow:0 1px 1px rgba(0,0,0,.05)}
 .msg.mine .bubble{background:#effdde}
 .msg .who{font-size:11px;color:#3390ec;font-weight:600;margin-bottom:2px}
 .msg .t{font-size:10px;color:#999;text-align:right;margin-top:2px}
-.comp{padding:8px;background:#fff;border-top:1px solid #ddd;display:flex;gap:6px}
-.comp input{flex:1;padding:9px 13px;border:1px solid #ccc;border-radius:18px;font-size:14px;outline:none}
-.comp button{padding:9px 16px;border:none;background:#3390ec;color:#fff;border-radius:18px;font-size:15px;cursor:pointer}
+
+.comp{padding:8px;background:#fff;border-top:1px solid #ddd;display:flex;gap:6px;flex-shrink:0;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+.comp input{flex:1;padding:10px 13px;border:1px solid #ccc;border-radius:18px;font-size:16px;outline:none}
+.comp button{padding:10px 16px;border:none;background:#3390ec;color:#fff;border-radius:18px;font-size:15px;cursor:pointer}
 
 /* Магазин */
-#shopBox{padding:12px;display:grid;gap:10px;overflow-y:auto;flex:1;grid-template-columns:1fr 1fr}
+#shopBox{padding:12px;display:grid;gap:10px;overflow-y:auto;flex:1;grid-template-columns:1fr 1fr;-webkit-overflow-scrolling:touch}
 .prod{background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 2px rgba(0,0,0,.06);display:flex;flex-direction:column}
 .prod img{width:100%;height:120px;object-fit:cover;border-radius:6px;margin:8px 0}
 .prod h4{font-size:14px}
 .prod .price{color:#f39c12;font-weight:700;font-size:15px}
 .prod button{margin-top:auto;padding:8px;border:none;border-radius:6px;background:#2ba84a;color:#fff;font-weight:600;cursor:pointer}
 .sell-form{padding:12px;background:#fff;margin:10px;border-radius:10px;width:100%;max-width:400px;align-self:center}
-.sell-form input,.sell-form textarea{width:100%;padding:9px;margin:5px 0;border:1px solid #ccc;border-radius:7px;font-size:14px;font-family:inherit}
+.sell-form input,.sell-form textarea{width:100%;padding:9px;margin:5px 0;border:1px solid #ccc;border-radius:7px;font-size:16px;font-family:inherit}
 .sell-form button{width:100%;padding:10px;margin-top:6px;background:#3390ec;color:#fff;border:none;border-radius:7px;font-weight:600}
 
 /* Модалки */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
 .modal{background:#fff;padding:20px;border-radius:12px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
-.modal input{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px}
+.modal input{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px;font-size:16px}
 .user-list{max-height:150px;overflow-y:auto;margin:10px 0;border:1px solid #eee;padding:5px;border-radius:8px}
 .user-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;font-size:14px;border-bottom:1px solid #f5f5f5}
-.modal button{padding:10px;width:100%;background:#3390ec;color:#fff;border:none;border-radius:8px;margin-top:8px;cursor:pointer}
+.modal button{padding:10px;width:100%;background:#3390ec;color:#fff;border:none;border-radius:8px;margin-top:8px;cursor:pointer;font-size:14px}
 .modal .close{background:#eee;color:#333}
 
 @media(max-width:699px){
@@ -128,9 +130,9 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
         <h3 id="chat-title">Выбери чат</h3>
       </div>
       <div>
-        <button onclick="tab('chat')" style="background:none;border:none;font-size:18px;cursor:pointer">💬</button>
-        <button onclick="tab('shop')" style="background:none;border:none;font-size:18px;cursor:pointer">🛒</button>
-        <button onclick="tab('sell')" style="background:none;border:none;font-size:18px;cursor:pointer">📦</button>
+        <button onclick="tab('chat')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px">💬</button>
+        <button onclick="tab('shop')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px">🛒</button>
+        <button onclick="tab('sell')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px">📦</button>
       </div>
     </header>
 
@@ -233,6 +235,10 @@ async function openChat(id, name){
   socket.emit('join_chat', id);
   const {messages}=await api('/api/messages?chat_id='+id);
   $('log').innerHTML=''; messages.forEach(addMessageToUI); loadChats();
+  
+  // Включаем поле ввода и принудительно вызываем клавиатуру
+  $('msg').disabled = false; $('send-btn').disabled = false;
+  setTimeout(() => { $('msg').focus(); }, 100);
 }
 function closeChat(){$('app').classList.remove('chat-open'); currentChatId=null;}
 function addMessageToUI(m){
@@ -274,6 +280,7 @@ function tab(t){
   if(!currentChatId)return alert('Выбери чат');
   $('log').classList.toggle('hidden',t!=='chat'); $('shopBox').classList.toggle('hidden',t!=='shop'); $('sellBox').classList.toggle('hidden',t!=='sell');
   $('comp').style.display=t==='chat'?'flex':'none'; if(t==='shop')loadShop();
+  if(t==='chat') setTimeout(()=>{$('msg').focus();},100);
 }
 
 // --- ПЕРЕВОД ПУЛИКОВ ---
@@ -337,7 +344,6 @@ async function openAdminPanel(){
     <button class="close" style="margin-top:15px" onclick="this.parentElement.parentElement.remove()">Закрыть</button></div>`;
   document.body.appendChild(bg); loadAdminData();
 }
-
 async function loadAdminData() {
   const {requests}=await api('/api/admin/requests'); const rl = $('reqList'); rl.innerHTML = '';
   requests.forEach(r => {
