@@ -63,7 +63,7 @@ function adminOnly(rq, rs, nx) {
   nx();
 }
 
-// --- ЗАЯВКИ И СОБЕСЕДОВАНИЕ ---
+// --- ЗАЯВКИ ---
 app.post('/api/request', (rq, rs) => {
   const { contact } = rq.body;
   if (!contact) return rs.status(400).json({ error: 'Введи номер' });
@@ -72,18 +72,10 @@ app.post('/api/request', (rq, rs) => {
   rs.json({ ok: true, requestId: i.lastInsertRowid });
 });
 
-// Обновление данных заявки (школа, класс и т.д.)
 app.post('/api/request/update', (rq, rs) => {
   const { id, school, class_name, name, source } = rq.body;
   db.prepare('UPDATE requests SET school=?, class_name=?, name=?, source=? WHERE id=?').run(school, class_name, name, source, id);
   rs.json({ ok: true });
-});
-
-app.post('/api/check-request', (rq, rs) => {
-  const req = db.prepare('SELECT * FROM requests WHERE contact=? ORDER BY id DESC LIMIT 1').get(rq.body.contact);
-  if (!req) return rs.status(404).json({ error: 'Не найдено' });
-  if (req.status === 'pending') return rs.json({ status: 'pending' });
-  rs.json({ status: 'done', login: req.login, password: req.password });
 });
 
 // --- АВТОРИЗАЦИЯ ---
@@ -110,15 +102,15 @@ app.post('/api/admin/create-user', auth, adminOnly, (rq, rs) => {
     
     if (requestId) {
       db.prepare('UPDATE requests SET status=?, login=?, password=? WHERE id=?').run('done', username, password, requestId);
-      // Отправляем сокет-событие, чтобы у человека на экране сразу появился логин
       const req = db.prepare('SELECT contact FROM requests WHERE id=?').get(requestId);
-      if(req) io.emit('request_approved_' + req.contact, { login: username, password });
+      // Отправляем всем в комнату ожидания
+      if(req) io.to('waiting_' + req.contact).emit('request_approved', { login: username, password });
     }
     rs.json({ ok: true });
   } catch (e) { rs.status(400).json({ error: 'Логин занят' }); }
 });
 
-// --- ПРОФИЛИ, ЧАТЫ, МАГАЗИН (как в прошлом коде) ---
+// --- ПРОФИЛИ, ЧАТЫ, МАГАЗИН ---
 app.get('/api/profile/:username', auth, (rq, rs) => {
   const u = db.prepare('SELECT id, username, avatar, balance, bio, role FROM users WHERE username=?').get(rq.params.username);
   if (!u) return rs.status(404).json({ error: 'Не найден' });
@@ -178,15 +170,24 @@ app.post('/api/products/:id/buy', auth, (rq, rs) => {
 app.get('/api/admin/users', auth, adminOnly, (rq, rs) => rs.json({ users: db.prepare('SELECT id, username, role, banned FROM users ORDER BY id').all() }));
 app.get('/api/admin/requests', auth, adminOnly, (rq, rs) => rs.json({ requests: db.prepare('SELECT * FROM requests ORDER BY id DESC').all() }));
 
-// --- СОКЕТЫ ---
-io.use((s, nx) => {
-  const c = Object.fromEntries((s.handshake.headers.cookie || '').split(';').map(x => x.trim().split('=')));
-  const u = getUser(c.token); if (!u || u.banned) return nx(new Error('unauth')); s.user = u; nx();
-});
+// --- СОКЕТЫ (ИСПРАВЛЕНО) ---
 io.on('connection', (s) => {
+  // Проверяем, авторизован ли пользователь
+  const c = Object.fromEntries((s.handshake.headers.cookie || '').split(';').map(x => x.trim().split('=')));
+  const u = getUser(c.token);
+  
+  // Если не авторизован — он может только слушать (нужно для заявок)
+  if (!u || u.banned) {
+    s.on('join_waiting', (contact) => s.join('waiting_' + contact));
+    return;
+  }
+  
+  // Если авторизован — полный доступ
+  s.user = u;
   s.join('chat_1');
   const memberships = db.prepare('SELECT chat_id FROM chat_members WHERE user_id=?').all(s.user.id);
   memberships.forEach(m => s.join('chat_' + m.chat_id));
+  
   s.on('join_chat', (chatId) => s.join('chat_' + chatId));
   s.on('message', ({ chatId, text, sticker }) => {
     if (!text && !sticker) return;
