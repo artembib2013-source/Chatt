@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Чат с группами</title>
+<title>Чат с заявками</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hidden}
@@ -15,6 +15,7 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
 .card button{width:100%;padding:11px;margin-top:8px;background:#3390ec;color:#fff;border:none;border-radius:8px;font-weight:600;font-size:15px}
 .card .sw{text-align:center;margin-top:10px;font-size:13px;color:#3390ec;cursor:pointer}
 .err{color:#c22;font-size:12px;margin-top:5px;min-height:16px}
+.ok{color:#2ba84a;font-size:13px;margin-top:10px;font-weight:bold;background:#effdde;padding:10px;border-radius:6px;text-align:center}
 
 #app{display:flex;height:100vh;flex-direction:column}
 @media(min-width:700px){#app{flex-direction:row}}
@@ -27,7 +28,8 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
 .chat-item .name{font-weight:600}
 .chat-item .count{font-size:11px;color:#888}
 .sidebar .actions{padding:10px;border-top:1px solid #eee}
-.sidebar .actions button{width:100%;padding:10px;background:#2ba84a;color:#fff;border:none;border-radius:8px;font-weight:600}
+.sidebar .actions button{width:100%;padding:10px;background:#2ba84a;color:#fff;border:none;border-radius:8px;font-weight:600;margin-bottom:8px}
+.sidebar .actions .admin-btn{background:#d6274a;margin-bottom:0}
 
 .main{flex:1;display:flex;flex-direction:column;background:#dfe6ec;height:100vh}
 .main header{padding:12px;background:#fff;border-bottom:1px solid #ddd;display:flex;justify-content:space-between;align-items:center}
@@ -43,12 +45,12 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
 .prod{background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 2px rgba(0,0,0,.06)}
 .prod h4{font-size:15px;margin-bottom:4px}
 .prod .price{color:#2ba84a;font-weight:700;font-size:16px}
+.prod img{max-width:100%;border-radius:6px;margin-top:6px;max-height:150px;object-fit:cover}
 .prod button{margin-top:8px;padding:8px 14px;border:none;border-radius:6px;background:#2ba84a;color:#fff;font-weight:600;cursor:pointer}
 .sell-form{padding:12px;background:#fff;margin:10px;border-radius:10px}
 .sell-form input,.sell-form textarea{width:100%;padding:9px;margin:5px 0;border:1px solid #ccc;border-radius:7px;font-size:14px;font-family:inherit}
 .sell-form button{width:100%;padding:10px;margin-top:6px;background:#3390ec;color:#fff;border:none;border-radius:7px;font-weight:600}
 
-/* Мобильная адаптация: скрываем сайдбар при выборе чата */
 @media(max-width:699px){
   .main{display:none}
   #app.chat-open .sidebar{display:none}
@@ -57,39 +59,53 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
 }
 #back-btn{display:none;background:none;border:none;font-size:20px;cursor:pointer;margin-right:8px}
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
-.modal{background:#fff;padding:20px;border-radius:12px;width:100%;max-width:400px}
+.modal{background:#fff;padding:20px;border-radius:12px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
 .modal input{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px}
 .user-list{max-height:150px;overflow-y:auto;margin:10px 0;border:1px solid #eee;padding:5px;border-radius:8px}
-.user-item{display:flex;align-items:center;gap:8px;padding:5px 0;font-size:14px}
-.modal button{padding:10px;width:100%;background:#3390ec;color:#fff;border:none;border-radius:8px;margin-top:8px}
+.user-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:5px 0;font-size:14px;border-bottom:1px solid #f5f5f5}
+.modal button{padding:10px;width:100%;background:#3390ec;color:#fff;border:none;border-radius:8px;margin-top:8px;cursor:pointer}
 .modal .close{background:#eee;color:#333}
+.btn-ban{background:#c22!important;color:#fff;padding:4px 8px;font-size:11px;width:auto!important;margin:0!important}
+.btn-unban{background:#2ba84a!important;color:#fff;padding:4px 8px;font-size:11px;width:auto!important;margin:0!important}
+.btn-req{background:#3390ec!important;color:#fff;padding:4px 8px;font-size:11px;width:auto!important;margin:0!important}
+.req-item{background:#f9f9f9;padding:10px;margin:5px 0;border-radius:6px;font-size:13px;border-left:3px solid #3390ec}
 </style>
 </head>
 <body>
 
-<!-- АВТОРИЗАЦИЯ -->
+<!-- ЭКРАН ВХОДА -->
 <div id="auth">
-  <div class="card">
-    <h2 id="title">Вход</h2>
+  <div class="card" id="loginCard">
+    <h2>Вход</h2>
     <input id="u" placeholder="Логин">
     <input id="p" type="password" placeholder="Пароль">
-    <button onclick="doAuth()">Войти</button>
-    <div class="sw" onclick="toggleAuth()"><span id="sw">Нет аккаунта? Регистрация</span></div>
+    <button onclick="doLogin()">Войти</button>
+    <div class="sw" onclick="showRequest()">Нет аккаунта? Оставить заявку</div>
     <div class="err" id="err"></div>
-    <div style="font-size:11px;color:#888;margin-top:10px">Админ: dev / dev12345</div>
+  </div>
+
+  <div class="card hidden" id="requestCard">
+    <h2>Заявка на регистрацию</h2>
+    <input id="reqContact" placeholder="Ваш номер или имя (напр. bon't)">
+    <button onclick="sendRequest()">Отправить</button>
+    <div class="sw" onclick="showLogin()">Уже есть аккаунт? Войти</div>
+    <div class="err" id="reqErr"></div>
+    <div class="ok hidden" id="reqOk"></div>
+    <div class="sw" style="margin-top:15px" onclick="checkRequestStatus()">Проверить статус заявки</div>
   </div>
 </div>
 
-<!-- ПРИЛОЖЕНИЕ -->
+<!-- ОСНОВНОЕ ПРИЛОЖЕНИЕ -->
 <div id="app" class="hidden">
   <div class="sidebar">
     <header>
-      <div id="me-name">Мой профиль</div>
+      <div id="me-name">Профиль</div>
       <button onclick="logout()" style="background:none;border:none;color:#fff;cursor:pointer">Выйти</button>
     </header>
     <div class="chat-list" id="chatList"></div>
     <div class="actions">
       <button onclick="openCreateChat()">+ Создать группу</button>
+      <button id="adminPanelBtn" class="admin-btn hidden" onclick="openAdminPanel()">🛠 Панель Админа</button>
     </div>
   </div>
 
@@ -116,6 +132,7 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
         <input id="ptitle" placeholder="Название">
         <input id="pprice" type="number" placeholder="Цена, ₽">
         <textarea id="pdescr" placeholder="Описание" rows="2"></textarea>
+        <input id="pimage" placeholder="Ссылка на фото (URL)">
         <button onclick="sell()">Выставить</button>
       </div>
     </div>
@@ -130,8 +147,9 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;overflow:hid
 <script src="/socket.io/socket.io.js"></script>
 <script>
 const $=id=>document.getElementById(id);
-let me=null, socket=null, currentChatId=null, authMode='login';
+let me=null, socket=null, currentChatId=null;
 let allChats=[];
+let lastReqContact = '';
 
 async function api(url,m='GET',b){
   const r=await fetch(url,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});
@@ -142,17 +160,52 @@ async function api(url,m='GET',b){
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmtT(ts){return new Date(ts).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}
 
-function toggleAuth(){authMode=authMode==='login'?'register':'login';
-$('title').textContent=authMode==='login'?'Вход':'Регистрация';
-$('sw').textContent=authMode==='login'?'Нет аккаунта? Регистрация':'Уже есть? Войти';}
+// --- ЭКРАН ЗАЯВОК ---
+function showRequest() {
+  $('loginCard').classList.add('hidden');
+  $('requestCard').classList.remove('hidden');
+}
+function showLogin() {
+  $('requestCard').classList.add('hidden');
+  $('loginCard').classList.remove('hidden');
+}
 
-async function doAuth(){
+async function sendRequest() {
+  $('reqErr').textContent = '';
+  $('reqOk').classList.add('hidden');
+  const contact = $('reqContact').value.trim();
+  if(!contact) return $('reqErr').textContent = 'Введи номер или имя';
+  try {
+    await api('/api/request', 'POST', { contact });
+    lastReqContact = contact;
+    $('reqOk').textContent = '✅ Заявка отправлена! Ждите, админ выдаст логин и пароль.';
+    $('reqOk').classList.remove('hidden');
+  } catch(e) { $('reqErr').textContent = e.message; }
+}
+
+async function checkRequestStatus() {
+  $('reqErr').textContent = '';
+  $('reqOk').classList.add('hidden');
+  const contact = $('reqContact').value.trim();
+  if(!contact) return $('reqErr').textContent = 'Введи свой номер или имя';
+  try {
+    const res = await api('/api/check-request', 'POST', { contact });
+    if(res.status === 'pending') {
+      $('reqErr').textContent = '⏳ Заявка еще на рассмотрении.';
+    } else {
+      $('reqOk').innerHTML = `✅ Аккаунт создан!<br><br>Логин: <b>${res.login}</b><br>Пароль: <b>${res.password}</b>`;
+      $('reqOk').classList.remove('hidden');
+    }
+  } catch(e) { $('reqErr').textContent = e.message; }
+}
+
+// --- ВХОД ---
+async function doLogin(){
   $('err').textContent='';
   const username=$('u').value.trim(), password=$('p').value;
   if(!username||!password){$('err').textContent='Заполни поля';return}
   try{
-    const url=authMode==='login'?'/api/login':'/api/register';
-    const {user}=await api(url,'POST',{username,password});
+    const {user}=await api('/api/login','POST',{username,password});
     me=user; start();
   }catch(e){$('err').textContent=e.message}
 }
@@ -163,6 +216,7 @@ async function start(){
   $('auth').classList.add('hidden');
   $('app').classList.remove('hidden');
   $('me-name').textContent=me.username;
+  if(me.role === 'admin') $('adminPanelBtn').classList.remove('hidden');
   
   socket=io();
   socket.on('message', m => {
@@ -170,6 +224,13 @@ async function start(){
   });
   socket.on('new_chat_created', loadChats);
   socket.on('new_product', loadShop);
+  socket.on('new_request', () => {
+    if(me.role === 'admin') alert('🔔 Новая заявка на регистрацию!');
+  });
+  socket.on('emergency_clear', () => {
+    $('log').innerHTML = '';
+    alert('⚠️ Экстренная очистка: все сообщения удалены.');
+  });
 
   await loadChats();
 }
@@ -196,11 +257,11 @@ async function openChat(id, name){
   $('shopBox').classList.add('hidden');
   $('sellBox').classList.add('hidden');
   
-  socket.emit('join_chat', id); // подписываемся на комнату
+  socket.emit('join_chat', id);
   const {messages}=await api('/api/messages?chat_id='+id);
   $('log').innerHTML='';
   messages.forEach(addMessageToUI);
-  loadChats(); // обновить подсветку
+  loadChats();
 }
 
 function closeChat(){$('app').classList.remove('chat-open'); currentChatId=null;}
@@ -221,7 +282,7 @@ function send(){
 }
 
 function tab(t){
-  if(!currentChatId)return alert('Сначала выбери чат');
+  if(!currentChatId)return alert('Выбери чат');
   $('log').classList.toggle('hidden',t!=='chat');
   $('shopBox').classList.toggle('hidden',t!=='shop');
   $('sellBox').classList.toggle('hidden',t!=='sell');
@@ -229,7 +290,6 @@ function tab(t){
   if(t==='shop')loadShop();
 }
 
-// --- МОДАЛКА СОЗДАНИЯ ГРУППЫ ---
 async function openCreateChat(){
   const {users}=await api('/api/users');
   const bg=document.createElement('div');
@@ -258,7 +318,6 @@ async function createGroup(btn){
   await loadChats();
 }
 
-// --- МАГАЗИН (глобальный) ---
 async function loadShop(){
   const {products}=await api('/api/products');
   const box=$('shopBox');box.innerHTML='';
@@ -268,23 +327,116 @@ async function loadShop(){
     d.className='prod';
     d.innerHTML=`<h4>${esc(p.title)}</h4><div class="price">${p.price} ₽</div>
     <div style="font-size:12px;color:#666">${esc(p.descr||'')}</div>
+    ${p.image_url ? `<img src="${esc(p.image_url)}" alt="Товар">` : ''}
     <div style="font-size:11px;color:#999;margin-top:4px">Продавец: ${esc(p.seller)}</div>
     ${p.seller!==me.username?`<button onclick="buy(${p.id})">Купить</button>`:'<div style="font-size:11px;color:#999;margin-top:6px">Твой товар</div>'}`;
     box.appendChild(d);
   });
 }
+
 async function sell(){
-  const title=$('ptitle').value.trim(), price=$('pprice').value, descr=$('pdescr').value.trim();
+  const title=$('ptitle').value.trim(), price=$('pprice').value, descr=$('pdescr').value.trim(), image_url=$('pimage').value.trim();
   if(!title||!price)return alert('Заполни поля');
-  await api('/api/products','POST',{title,price,descr});
-  $('ptitle').value='';$('pprice').value='';$('pdescr').value='';
+  await api('/api/products','POST',{title,price,descr,image_url});
+  $('ptitle').value='';$('pprice').value='';$('pdescr').value='';$('pimage').value='';
   alert('Товар выставлен!'); tab('shop');
 }
+
 async function buy(id){
   if(!confirm('Купить?'))return;
-  await api('/api/products/'+id+'/buy','POST');
-  alert('Куплено!'); loadShop();
+  const res = await api('/api/products/'+id+'/buy','POST');
+  alert('Куплено! Открываю личный чат с продавцом.');
+  await loadChats();
+  const chat = allChats.find(c => c.id === res.chatId);
+  if(chat) openChat(chat.id, chat.name);
+  else openChat(res.chatId, 'Чат покупки');
 }
+
+// --- ПАНЕЛЬ АДМИНА ---
+async function openAdminPanel(){
+  const bg=document.createElement('div');
+  bg.className='modal-bg';
+  bg.innerHTML=`<div class="modal" id="adminModal">
+    <h3>🛠 Панель Админа</h3>
+    <button style="background:#c22" onclick="emergencyClear()">🚨 ОЧИСТИТЬ ВСЕ СООБЩЕНИЯ</button>
+    
+    <hr style="margin:15px 0;border:none;border-top:1px solid #eee">
+    <h4>Заявки на регистрацию</h4>
+    <div id="reqList" style="font-size:13px">Загрузка...</div>
+
+    <hr style="margin:15px 0;border:none;border-top:1px solid #eee">
+    <h4>Пользователи</h4>
+    <div id="userManageList" style="font-size:13px">Загрузка...</div>
+    
+    <button class="close" style="margin-top:15px" onclick="this.parentElement.parentElement.remove()">Закрыть</button>
+  </div>`;
+  document.body.appendChild(bg);
+  loadAdminData();
+}
+
+async function loadAdminData() {
+  // Заявки
+  const {requests}=await api('/api/admin/requests');
+  const rl = $('reqList'); rl.innerHTML = '';
+  if(requests.length === 0) rl.innerHTML = '<div>Нет заявок</div>';
+  requests.forEach(r => {
+    const d = document.createElement('div');
+    d.className = 'req-item';
+    if(r.status === 'done') {
+      d.innerHTML = `<b>${esc(r.contact)}</b><br>Статус: Выдано (${r.login} / ${r.password})`;
+    } else {
+      d.innerHTML = `<b>${esc(r.contact)}</b><br><button class="btn-req" onclick="openCreateUserForReq(${r.id}, '${esc(r.contact)}')">Создать аккаунт</button>`;
+    }
+    rl.appendChild(d);
+  });
+
+  // Пользователи
+  const {users}=await api('/api/admin/users');
+  const ul = $('userManageList'); ul.innerHTML = '';
+  users.forEach(u => {
+    if(u.username === 'tutu') return; // Себя не баним
+    const d = document.createElement('div');
+    d.className = 'user-item';
+    d.innerHTML = `<span>${esc(u.username)} ${u.role==='admin'?'(Админ)':''}</span>
+      ${u.banned ? `<button class="btn-unban" onclick="toggleBan(${u.id}, false)">Разбанить</button>` : `<button class="btn-ban" onclick="toggleBan(${u.id}, true)">Забанить</button>`}`;
+    ul.appendChild(d);
+  });
+}
+
+function openCreateUserForReq(reqId, contact) {
+  const modal = $('adminModal');
+  modal.innerHTML = `
+    <h3>Создать аккаунт</h3>
+    <p style="margin-bottom:10px;font-size:12px;color:#666">Для заявки: <b>${contact}</b></p>
+    <input id="newLogin" placeholder="Придумай логин">
+    <input id="newPass" placeholder="Придумай пароль">
+    <button onclick="createUserForReq(${reqId})">Создать и выдать</button>
+    <button class="close" onclick="openAdminPanel()">Назад</button>
+  `;
+}
+
+async function createUserForReq(reqId) {
+  const login = $('newLogin').value.trim();
+  const pass = $('newPass').value.trim();
+  if(!login || !pass) return alert('Заполни логин и пароль');
+  try {
+    await api('/api/admin/create-user', 'POST', { username: login, password: pass, requestId: reqId });
+    alert('Аккаунт создан! Пользователь может забрать данные на экране входа.');
+    openAdminPanel();
+  } catch(e) { alert(e.message); }
+}
+
+async function toggleBan(userId, ban) {
+  await api('/api/admin/ban', 'POST', { userId, banned: ban });
+  loadAdminData();
+}
+
+async function emergencyClear() {
+  if(!confirm('ВНИМАНИЕ! Это удалит ВСЕ сообщения и товары у ВСЕХ пользователей. Продолжить?')) return;
+  await api('/api/admin/emergency-clear', 'POST');
+  alert('Всё очищено.');
+}
+
 $('msg').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}});
 </script>
 </body>
