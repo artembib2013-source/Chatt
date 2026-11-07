@@ -9,7 +9,6 @@
 body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dvh;overflow:hidden;position:fixed;width:100%}
 .hidden{display:none!important}
 
-/* Авторизация */
 #auth{display:flex;align-items:center;justify-content:center;height:100vh;height:100dvh;padding:16px;background:#3390ec;overflow-y:auto}
 .card{background:#fff;padding:22px;border-radius:12px;width:100%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.2)}
 .card h2{margin-bottom:14px;font-size:19px;text-align:center;color:#3390ec}
@@ -18,7 +17,16 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 .card .sw{text-align:center;margin-top:10px;font-size:13px;color:#3390ec;cursor:pointer}
 .err{color:#c22;font-size:12px;margin-top:5px;min-height:16px;text-align:center}
 
-/* Основной интерфейс */
+/* Окно заявки (чат-бот) */
+#interviewBox{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:380px;box-shadow:0 8px 30px rgba(0,0,0,.2);display:flex;flex-direction:column;height:80vh;max-height:600px}
+#chatInterview{flex:1;overflow-y:auto;background:#f0f4f8;padding:10px;border-radius:8px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px;font-size:13px}
+.bot-msg{background:#fff;padding:8px 12px;border-radius:10px;align-self:flex-start;box-shadow:0 1px 1px rgba(0,0,0,.05);max-width:90%}
+.user-msg{background:#d1e7ff;padding:8px 12px;border-radius:10px;align-self:flex-end;max-width:90%}
+#interviewInput{display:flex;gap:5px}
+#interviewInput input{flex:1;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:15px}
+#interviewInput button{padding:10px 15px;background:#3390ec;color:#fff;border:none;border-radius:8px;cursor:pointer}
+
+/* Основной интерфейс (как в прошлом коде) */
 #app{display:flex;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
 @media(min-width:700px){#app{flex-direction:row}}
 .sidebar{background:#fff;border-right:1px solid #ddd;width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
@@ -44,20 +52,17 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 .msg.mine .bubble{background:#effdde}
 .msg .who{font-size:11px;color:#3390ec;font-weight:600;margin-bottom:2px;cursor:pointer;text-decoration:underline}
 .msg .t{font-size:10px;color:#999;text-align:right;margin-top:2px}
-.sticker-img{width:100px;height:100px;object-fit:contain}
 
 .comp{padding:8px;background:#fff;border-top:1px solid #ddd;display:flex;gap:6px;flex-shrink:0;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
 .comp input{flex:1;padding:10px 13px;border:1px solid #ccc;border-radius:18px;font-size:16px;outline:none}
 .comp button{padding:10px 16px;border:none;background:#3390ec;color:#fff;border-radius:18px;font-size:15px;cursor:pointer}
 .sticker-btn{background:#f39c12!important;font-size:18px!important;padding:8px 14px!important}
 
-/* Стикеры */
 #stickerBox{position:fixed;bottom:60px;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:10px;display:grid;grid-template-columns:repeat(6,1fr);gap:10px;z-index:100;max-height:200px;overflow-y:auto}
 #stickerBox span{font-size:30px;text-align:center;cursor:pointer;padding:5px;border-radius:8px}
 #stickerBox span:hover{background:#f0f0f0}
 
-/* Магазин */
-#shopBox{padding:12px;display:grid;gap:10px;overflow-y:auto;flex:1;grid-template-columns:1fr 1fr;-webkit-overflow-scrolling:touch}
+#shopBox{padding:12px;display:grid;gap:10px;overflow-y:auto;flex:1;grid-template-columns:1fr 1fr}
 .prod{background:#fff;border-radius:10px;padding:12px;box-shadow:0 1px 2px rgba(0,0,0,.06);display:flex;flex-direction:column}
 .prod img{width:100%;height:120px;object-fit:cover;border-radius:6px;margin:8px 0}
 .prod h4{font-size:14px}
@@ -67,7 +72,6 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 .sell-form input,.sell-form textarea{width:100%;padding:9px;margin:5px 0;border:1px solid #ccc;border-radius:7px;font-size:16px;font-family:inherit}
 .sell-form button{width:100%;padding:10px;margin-top:6px;background:#3390ec;color:#fff;border:none;border-radius:7px;font-weight:600}
 
-/* Модалки */
 .modal-bg{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:10;padding:16px}
 .modal{background:#fff;padding:20px;border-radius:12px;width:100%;max-width:400px;max-height:90vh;overflow-y:auto}
 .modal input{width:100%;padding:10px;margin:6px 0;border:1px solid #ccc;border-radius:8px;font-size:16px}
@@ -96,18 +100,33 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
     <input id="u" placeholder="Логин">
     <input id="p" type="password" placeholder="Пароль">
     <button onclick="doLogin()">Войти</button>
-    <div class="sw" onclick="showRequest()">Нет аккаунта? Оставить заявку</div>
+    <div class="sw" onclick="startRequestFlow()">Нет аккаунта? Оставить заявку</div>
     <div class="err" id="err"></div>
   </div>
 
-  <div class="card hidden" id="requestCard">
-    <h2>Заявка на регистрацию</h2>
-    <input id="reqContact" placeholder="Ваш номер (напр. +7999...)">
-    <button onclick="sendRequest()">Отправить</button>
-    <div class="sw" onclick="showLogin()">Уже есть аккаунт? Войти</div>
-    <div class="err" id="reqErr"></div>
-    <div class="ok hidden" id="reqOk" style="color:#2ba84a;font-size:13px;margin-top:10px;text-align:center"></div>
-    <div class="sw" style="margin-top:15px" onclick="checkRequestStatus()">Проверить статус заявки</div>
+  <!-- ОКНО ЗАЯВКИ (ЧАТ-БОТ) -->
+  <div class="card hidden" id="requestCard" style="max-width:400px;padding:0;background:transparent;box-shadow:none">
+    <div id="interviewBox">
+      <div style="display:flex;justify-content:space-between;margin-bottom:10px;align-items:center">
+        <h3 style="font-size:16px;color:#3390ec">Заявка на регистрацию</h3>
+        <button onclick="showLogin()" style="background:none;color:#666;font-size:20px;width:auto;padding:0;margin:0">×</button>
+      </div>
+      <div id="chatInterview"></div>
+      <div id="interviewInput" class="hidden">
+        <input id="botInput" placeholder="Введи ответ..." autocomplete="off">
+        <button onclick="botSend()">Отправить</button>
+      </div>
+      <div id="waitingMsg" class="hidden" style="text-align:center;color:#666;font-size:13px;margin-top:10px">
+        ⏳ Ожидайте, администратор выдаст вам логин и пароль...
+      </div>
+      <div id="successMsg" class="hidden" style="text-align:center;margin-top:10px">
+        <p style="color:#2ba84a;font-weight:bold;margin-bottom:10px">✅ Аккаунт создан!</p>
+        <div style="background:#fff;padding:10px;border-radius:8px;margin-bottom:10px">
+          Логин: <b id="resLogin"></b><br>Пароль: <b id="resPass"></b>
+        </div>
+        <button onclick="autoLogin()" style="background:#2ba84a">Войти в аккаунт</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -126,7 +145,6 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
     <div class="chat-list" id="chatList"></div>
     <div class="actions">
       <button onclick="openCreateChat()">+ Создать группу</button>
-      <button onclick="openTransfer()" style="background:#f39c12">💸 Перевести Пулики</button>
       <button id="adminPanelBtn" class="admin-btn hidden" onclick="openAdminPanel()">🛠 Панель Админа</button>
     </div>
   </div>
@@ -135,7 +153,7 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
     <header>
       <div style="display:flex;align-items:center">
         <button id="back-btn" onclick="closeChat()">←</button>
-        <h3 id="chat-title" style="cursor:pointer" onclick="openChatInfo()">Выбери чат</h3>
+        <h3 id="chat-title">Выбери чат</h3>
       </div>
       <div>
         <button onclick="tab('chat')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px">💬</button>
@@ -166,7 +184,7 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
   </div>
 </div>
 
-<!-- Панель стикеров -->
+<!-- Стикеры -->
 <div id="stickerBox" class="hidden">
   <span onclick="sendSticker('😀')">😀</span>
   <span onclick="sendSticker('😂')">😂</span>
@@ -193,6 +211,10 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 const $=id=>document.getElementById(id);
 let me=null, socket=null, currentChatId=null, allChats=[];
 
+// --- АВТОСОХРАНЕНИЕ ДАННЫХ ЗАЯВКИ ---
+let reqData = JSON.parse(localStorage.getItem('reqData') || '{}');
+function saveReqData() { localStorage.setItem('reqData', JSON.stringify(reqData)); }
+
 async function api(url,m='GET',b){
   const r=await fetch(url,{method:m,headers:{'Content-Type':'application/json'},body:b?JSON.stringify(b):undefined});
   const d=await r.json().catch(()=>({}));
@@ -202,20 +224,110 @@ async function api(url,m='GET',b){
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmtT(ts){return new Date(ts).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}
 
-// --- АВТОРИЗАЦИЯ ---
-function showRequest() { $('loginCard').classList.add('hidden'); $('requestCard').classList.remove('hidden'); }
-function showLogin() { $('requestCard').classList.add('hidden'); $('loginCard').classList.remove('hidden'); }
-async function sendRequest() {
-  const contact = $('reqContact').value.trim();
-  if(!contact) return $('reqErr').textContent = 'Введи номер';
-  await api('/api/request', 'POST', { contact });
-  $('reqOk').textContent = '✅ Заявка отправлена!'; $('reqOk').classList.remove('hidden');
+// --- ЛОГИКА ЧАТ-БОТА ДЛЯ ЗАЯВКИ ---
+let botStep = 0;
+let currentReqId = null;
+
+function botMsg(text) {
+  const d = document.createElement('div'); d.className='bot-msg'; d.textContent = text;
+  $('chatInterview').appendChild(d); $('chatInterview').scrollTop = $('chatInterview').scrollHeight;
 }
-async function checkRequestStatus() {
-  const contact = $('reqContact').value.trim();
-  const res = await api('/api/check-request', 'POST', { contact });
-  if(res.status === 'pending') $('reqErr').textContent = '⏳ Ожидайте.';
-  else { $('reqOk').innerHTML = `✅ Логин: <b>${res.login}</b><br>Пароль: <b>${res.password}</b>`; $('reqOk').classList.remove('hidden'); }
+function userMsg(text) {
+  const d = document.createElement('div'); d.className='user-msg'; d.textContent = text;
+  $('chatInterview').appendChild(d); $('chatInterview').scrollTop = $('chatInterview').scrollHeight;
+}
+
+async function startRequestFlow() {
+  $('loginCard').classList.add('hidden');
+  $('requestCard').classList.remove('hidden');
+  
+  // Восстановление, если перезагрузили страницу
+  if (reqData.status === 'waiting') {
+    $('chatInterview').classList.add('hidden');
+    $('interviewInput').classList.add('hidden');
+    $('waitingMsg').classList.remove('hidden');
+    checkRequestSocket(reqData.contact);
+    return;
+  }
+
+  $('chatInterview').innerHTML = '';
+  botStep = 1;
+  botMsg("Привет! Давай заполним заявку на аккаунт.");
+  setTimeout(()=>botMsg("Как тебя зовут?"), 500);
+  $('interviewInput').classList.remove('hidden');
+  $('botInput').focus();
+}
+
+async function botSend() {
+  const val = $('botInput').value.trim();
+  if (!val) return;
+  userMsg(val);
+  $('botInput').value = '';
+
+  if (botStep === 1) { reqData.name = val; saveReqData(); botStep = 2; botMsg("В какой ты школе?"); }
+  else if (botStep === 2) { reqData.school = val; saveReqData(); botStep = 3; botMsg("В каком ты классе?"); }
+  else if (botStep === 3) { reqData.class_name = val; saveReqData(); botStep = 4; botMsg("Откуда узнал о нашем сайте?"); }
+  else if (botStep === 4) { 
+    reqData.source = val; saveReqData(); 
+    botStep = 5; 
+    botMsg("Какой у тебя номер телефона? (Для связи)");
+  }
+  else if (botStep === 5) {
+    reqData.contact = val; saveReqData();
+    botStep = 6;
+    
+    try {
+      // Отправляем заявку на сервер
+      const res = await api('/api/request', 'POST', { contact: reqData.contact });
+      currentReqId = res.requestId;
+      
+      // Дополняем данными
+      await api('/api/request/update', 'POST', { 
+        id: currentReqId, 
+        name: reqData.name, 
+        school: reqData.school, 
+        class_name: reqData.class_name, 
+        source: reqData.source 
+      });
+      
+      reqData.status = 'waiting';
+      reqData.id = currentReqId;
+      saveReqData();
+
+      botMsg("Спасибо! Данные отправлены.");
+      $('interviewInput').classList.add('hidden');
+      $('waitingMsg').classList.remove('hidden');
+      
+      checkRequestSocket(reqData.contact);
+      
+    } catch(e) { botMsg("Ошибка: " + e.message); }
+  }
+}
+
+function checkRequestSocket(contact) {
+  // Слушаем сокет на одобрение
+  socket = io();
+  socket.on('request_approved_' + contact, (data) => {
+    $('waitingMsg').classList.add('hidden');
+    $('successMsg').classList.remove('hidden');
+    $('resLogin').textContent = data.login;
+    $('resPass').textContent = data.password;
+  });
+}
+
+function autoLogin() {
+  const l = $('resLogin').textContent;
+  const p = $('resPass').textContent;
+  $('u').value = l; $('p').value = p;
+  $('resLogin').textContent = ''; $('resPass').textContent = '';
+  localStorage.removeItem('reqData'); // Очищаем после успеха
+  doLogin();
+}
+
+// --- СТАНДАРТНАЯ АВТОРИЗАЦИЯ ---
+function showLogin() { 
+  $('requestCard').classList.add('hidden'); $('loginCard').classList.remove('hidden');
+  $('chatInterview').classList.remove('hidden'); $('waitingMsg').classList.add('hidden'); $('successMsg').classList.add('hidden');
 }
 async function doLogin(){
   try{
@@ -225,7 +337,7 @@ async function doLogin(){
 }
 async function logout(){ await api('/api/logout','POST'); location.reload(); }
 
-// --- СТАРТ ---
+// --- ОСТАЛЬНОЙ КОД (Профили, Магазин, Чаты) ---
 async function start(){
   $('auth').classList.add('hidden'); $('app').classList.remove('hidden');
   updateMyProfile();
@@ -247,7 +359,6 @@ function updateMyProfile() {
   $('myAvatar').src = me.avatar || `https://ui-avatars.com/api/?name=${me.username}&background=random`;
 }
 
-// --- ЧАТЫ ---
 async function loadChats(){
   const {chats}=await api('/api/chats'); allChats=chats;
   const list=$('chatList');list.innerHTML='';
@@ -262,7 +373,7 @@ async function loadChats(){
 async function openChat(id, name){
   currentChatId=id; $('chat-title').textContent=name;
   $('app').classList.add('chat-open'); $('log').classList.remove('hidden'); $('comp').style.display='flex';
-  $('shopBox').classList.add('hidden'); $('sellBox').classList.add('hidden'); $('#stickerBox').classList.add('hidden');
+  $('shopBox').classList.add('hidden'); $('sellBox').classList.add('hidden'); $('stickerBox').classList.add('hidden');
   socket.emit('join_chat', id);
   const {messages}=await api('/api/messages?chat_id='+id);
   $('log').innerHTML=''; messages.forEach(addMessageToUI); loadChats();
@@ -277,21 +388,12 @@ function addMessageToUI(m){
   d.innerHTML=`<img class="avatar" src="${m.avatar || 'https://ui-avatars.com/api/?name='+esc(m.username)}" onclick="openUserProfile('${esc(m.username)}')"><div class="bubble">${m.username!=='Система'?`<div class="who" onclick="openUserProfile('${esc(m.username)}')">${esc(m.username)}</div>`:''}${content}<div class="t">${fmtT(m.created_at)}</div></div>`;
   $('log').appendChild(d); $('log').scrollTop=$('log').scrollHeight;
 }
-function send(){ 
-  const t=$('msg').value.trim(); if(!t||!currentChatId)return; 
-  socket.emit('message',{chatId:currentChatId, text:t}); 
-  $('msg').value='';$('msg').focus(); 
-}
-function sendSticker(s){
-  if(!currentChatId) return alert('Выбери чат');
-  socket.emit('message',{chatId:currentChatId, sticker:s});
-  toggleStickers();
-}
+function send(){ const t=$('msg').value.trim(); if(!t||!currentChatId)return; socket.emit('message',{chatId:currentChatId, text:t}); $('msg').value='';$('msg').focus(); }
+function sendSticker(s){ if(!currentChatId) return alert('Выбери чат'); socket.emit('message',{chatId:currentChatId, sticker:s}); toggleStickers(); }
 $('msg').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}});
+function toggleStickers(){ $('stickerBox').classList.toggle('hidden'); }
+$('botInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();botSend()}});
 
-function toggleStickers(){ $('#stickerBox').classList.toggle('hidden'); }
-
-// --- ПРОФИЛИ ---
 async function openUserProfile(username) {
   if(username === 'Система') return;
   try {
@@ -308,7 +410,6 @@ async function openUserProfile(username) {
     document.body.appendChild(bg);
   } catch(e) { alert(e.message); }
 }
-
 async function openMyProfile() {
   const bg=document.createElement('div'); bg.className='modal-bg';
   bg.innerHTML=`<div class="modal" style="text-align:center">
@@ -322,30 +423,19 @@ async function openMyProfile() {
   </div>`;
   document.body.appendChild(bg);
 }
-
 async function saveMyProfile(btn) {
   const bg=btn.closest('.modal-bg');
-  const bio = bg.querySelector('#setBio').value.trim();
-  const avatar = bg.querySelector('#setAvatar').value.trim();
-  const nickEl = bg.querySelector('#setNick');
-  const username = nickEl ? nickEl.value.trim() : null;
-  
+  const bio = bg.querySelector('#setBio').value.trim(), avatar = bg.querySelector('#setAvatar').value.trim();
+  const nickEl = bg.querySelector('#setNick'), username = nickEl ? nickEl.value.trim() : null;
   await api('/api/profile/update', 'POST', { bio, avatar, username });
-  me.bio = bio; me.avatar = avatar;
-  if(username) me.username = username;
+  me.bio = bio; me.avatar = avatar; if(username) me.username = username;
   updateMyProfile(); bg.remove();
 }
-
 async function startDM(username, btn) {
-  try {
-    const {chatId} = await api('/api/dm/start', 'POST', { username });
-    btn.closest('.modal-bg').remove();
-    await loadChats();
-    openChat(chatId, 'Личный чат с ' + username);
-  } catch(e) { alert(e.message); }
+  const {chatId} = await api('/api/dm/start', 'POST', { username });
+  btn.closest('.modal-bg').remove(); await loadChats(); openChat(chatId, 'Личный чат с ' + username);
 }
 
-// --- МАГАЗИН ---
 async function loadShop(){
   const {products}=await api('/api/products'); const box=$('shopBox');box.innerHTML='';
   if(!products.length){box.innerHTML='<div style="text-align:center;color:#888;padding:20px">Товаров нет</div>';return}
@@ -371,33 +461,11 @@ async function buy(id){
   alert('Куплено! Открываю чат с продавцом.');
   await loadChats(); openChat(res.chatId, 'Чат покупки');
 }
-
 function tab(t){
   if(!currentChatId)return alert('Выбери чат');
   $('log').classList.toggle('hidden',t!=='chat'); $('shopBox').classList.toggle('hidden',t!=='shop'); $('sellBox').classList.toggle('hidden',t!=='sell');
   $('comp').style.display=t==='chat'?'flex':'none'; if(t==='shop')loadShop();
-  if(t==='chat') setTimeout(()=>{$('msg').focus();},100);
 }
-
-// --- ПЕРЕВОД ПУЛИКОВ ---
-async function openTransfer(){
-  const bg=document.createElement('div'); bg.className='modal-bg';
-  bg.innerHTML=`<div class="modal"><h3>Перевод Пуликов</h3>
-    <input id="trUser" placeholder="Логин получателя"><input id="trAmount" type="number" placeholder="Сумма">
-    <button onclick="doTransfer(this)">Отправить</button>
-    <button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button></div>`;
-  document.body.appendChild(bg);
-}
-async function doTransfer(btn){
-  const bg=btn.closest('.modal-bg');
-  const toUser=bg.querySelector('#trUser').value.trim(), amount=bg.querySelector('#trAmount').value;
-  try {
-    await api('/api/transfer', 'POST', { toUser, amount }); // Нужно добавить этот роут на сервере, если еще нет
-    alert('Переведено!'); bg.remove();
-  } catch(e) { alert(e.message); }
-}
-
-// --- СОЗДАНИЕ ГРУППЫ ---
 async function openCreateChat(){
   const {users}=await api('/api/users'); const bg=document.createElement('div'); bg.className='modal-bg';
   bg.innerHTML=`<div class="modal"><h3>Новая группа</h3><input id="gname" placeholder="Название">
@@ -428,7 +496,9 @@ async function loadAdminData() {
   const {requests}=await api('/api/admin/requests'); const rl = $('reqList'); rl.innerHTML = '';
   requests.forEach(r => {
     const d = document.createElement('div'); d.className = 'req-item';
-    d.innerHTML = r.status==='done' ? `<b>${esc(r.contact)}</b> (Выдано: ${r.login})` : `<b>${esc(r.contact)}</b><br><button class="btn-req" onclick="openCreateUserForReq(${r.id}, '${esc(r.contact)}')">Создать</button>`;
+    d.innerHTML = r.status==='done' ? `<b>${esc(r.contact)}</b> (Выдано)` : 
+      `<b>${esc(r.contact)}</b><br><span style="font-size:11px;color:#666">Имя: ${esc(r.name||'—')}, Школа: ${esc(r.school||'—')}, Класс: ${esc(r.class_name||'—')}, Источник: ${esc(r.source||'—')}</span><br>
+      <button class="btn-req" onclick="openCreateUserForReq(${r.id}, '${esc(r.contact)}')">Создать аккаунт</button>`;
     rl.appendChild(d);
   });
 
@@ -446,14 +516,14 @@ async function loadAdminData() {
 }
 function openCreateUserForReq(reqId, contact) {
   const bg=document.createElement('div'); bg.className='modal-bg';
-  bg.innerHTML=`<div class="modal"><h3>Создать аккаунт</h3><input id="newLogin" placeholder="Логин"><input id="newPass" placeholder="Пароль">
-    <button onclick="createUserForReq(${reqId}, this)">Создать</button><button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button></div>`;
+  bg.innerHTML=`<div class="modal"><h3>Создать аккаунт для ${esc(contact)}</h3><input id="newLogin" placeholder="Логин"><input id="newPass" placeholder="Пароль">
+    <button onclick="createUserForReq(${reqId}, this)">Выдать и отправить</button><button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button></div>`;
   document.body.appendChild(bg);
 }
 async function createUserForReq(reqId, btn) {
   const bg=btn.closest('.modal-bg'); const login = bg.querySelector('#newLogin').value.trim(), pass = bg.querySelector('#newPass').value.trim();
   await api('/api/admin/create-user', 'POST', { username: login, password: pass, requestId: reqId });
-  alert('Аккаунт создан!'); bg.remove(); loadAdminData();
+  alert('Аккаунт создан, данные отправлены пользователю!'); bg.remove(); loadAdminData();
 }
 async function toggleBan(userId, ban) { await api('/api/admin/ban', 'POST', { userId, banned: ban }); loadAdminData(); }
 async function changeNick(userId, currentNick) {
@@ -462,11 +532,8 @@ async function changeNick(userId, currentNick) {
   await api('/api/admin/change-nick', 'POST', { userId, newNick });
   alert('Ник изменен'); loadAdminData();
 }
-async function banAll() {
-  if(!confirm('Забанить ВСЕХ пользователей?')) return;
-  await api('/api/admin/ban-all', 'POST'); alert('Все забанены'); loadAdminData();
-}
+async function banAll() { if(confirm('Забанить ВСЕХ?')) { await api('/api/admin/ban-all', 'POST'); alert('Все забанены'); loadAdminData(); } }
 async function emergencyClear() { if(confirm('Удалить ВСЕ сообщения?')) { await api('/api/admin/emergency-clear', 'POST'); alert('Очищено'); } }
 </script>
 </body>
-</html>
+    </html>
