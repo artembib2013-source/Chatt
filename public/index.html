@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-<title>Telegram Clone</title>
+<title>Мессенджер</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dvh;overflow:hidden;position:fixed;width:100%}
@@ -18,7 +18,6 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 .err{color:#c22;font-size:12px;margin-top:5px;min-height:16px;text-align:center}
 .rules{font-size:11px;color:#666;margin-top:15px;line-height:1.4;border-top:1px solid #eee;padding-top:10px;text-align:left}
 
-/* Окно заявки (чат-бот) */
 #interviewBox{background:#fff;border-radius:12px;padding:15px;width:100%;max-width:380px;box-shadow:0 8px 30px rgba(0,0,0,.2);display:flex;flex-direction:column;height:70vh;max-height:500px}
 #chatInterview{flex:1;overflow-y:auto;background:#f0f4f8;padding:10px;border-radius:8px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px;font-size:13px}
 .bot-msg{background:#fff;padding:8px 12px;border-radius:10px;align-self:flex-start;box-shadow:0 1px 1px rgba(0,0,0,.05);max-width:90%}
@@ -98,22 +97,22 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 
 <div id="auth">
   <div class="card" id="loginCard">
-    <h2>Вход в мессенджер</h2>
+    <h2>Вход</h2>
     <input id="u" placeholder="Логин" autocomplete="username">
     <input id="p" type="password" placeholder="Пароль" autocomplete="current-password">
     <button onclick="doLogin()">Войти</button>
     <div class="sw" onclick="startRequestFlow()">Нет аккаунта? Оставить заявку</div>
     <div class="err" id="err"></div>
     <div class="rules">
-      <b>Правила и соглашение:</b><br>
-      Регистрируясь, вы соглашаетесь с правилами магазина и чата. Администрация не несет ответственности за действия пользователей, за покупки и переводы средств (Пуликов). Будьте вежливы.
+      <b>Правила:</b><br>
+      Регистрируясь, вы соглашаетесь с правилами чата и магазина. Администрация не несет ответственности за действия пользователей и переводы средств (Пуликов).
     </div>
   </div>
 
   <div class="card hidden" id="requestCard" style="max-width:400px;padding:0;background:transparent;box-shadow:none">
     <div id="interviewBox">
       <div style="display:flex;justify-content:space-between;margin-bottom:10px;align-items:center">
-        <h3 style="font-size:16px;color:#3390ec">Заявка на регистрацию</h3>
+        <h3 style="font-size:16px;color:#3390ec">Заявка</h3>
         <button onclick="showLogin()" style="background:none;color:#666;font-size:20px;width:auto;padding:0;margin:0">×</button>
       </div>
       <div id="chatInterview"></div>
@@ -129,7 +128,7 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
         <div style="background:#fff;padding:10px;border-radius:8px;margin-bottom:10px">
           Логин: <b id="resLogin"></b><br>Пароль: <b id="resPass"></b>
         </div>
-        <button onclick="autoLogin()" style="background:#2ba84a">Войти в аккаунт</button>
+        <button onclick="autoLogin()" style="background:#2ba84a">Войти</button>
       </div>
       <button id="resetBtn" onclick="resetRequest()" style="margin-top:10px;background:#e74c3c;font-size:12px;padding:8px">Сбросить заявку</button>
     </div>
@@ -178,7 +177,7 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
       <div class="sell-form">
         <h3>Выставить товар</h3>
         <input id="ptitle" placeholder="Название">
-        <input id="pprice" type="number" placeholder="Цена (в Пуликах)">
+        <input id="pprice" type="number" placeholder="Цена (П)">
         <textarea id="pdescr" placeholder="Описание" rows="2"></textarea>
         <input id="pimage" placeholder="Ссылка на фото (URL)">
         <button onclick="sell()">Выставить</button>
@@ -232,7 +231,6 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function fmtT(ts){return new Date(ts).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}
 function focusMsg() { if (!$('msg').disabled && !currentChatId === null) $('msg').focus(); }
 
-// --- СБРОС ЗАЯВКИ ---
 function resetRequest() {
   if(!confirm('Сбросить заявку?')) return;
   localStorage.removeItem('reqData'); reqData = {};
@@ -240,7 +238,6 @@ function resetRequest() {
   startRequestFlow();
 }
 
-// --- БОТ ---
 let botStep = 0, currentReqId = null;
 function botMsg(text) { const d = document.createElement('div'); d.className='bot-msg'; d.textContent = text; $('chatInterview').appendChild(d); $('chatInterview').scrollTop = $('chatInterview').scrollHeight; }
 function userMsg(text) { const d = document.createElement('div'); d.className='user-msg'; d.textContent = text; $('chatInterview').appendChild(d); $('chatInterview').scrollTop = $('chatInterview').scrollHeight; }
@@ -254,8 +251,7 @@ async function startRequestFlow() {
     checkRequestSocket(reqData.contact); return;
   }
   $('chatInterview').innerHTML = ''; botStep = 1;
-  botMsg("Привет! Давай заполним заявку.");
-  setTimeout(()=>botMsg("Согласен с правилами? (Напиши 'Да')"), 500);
+  botMsg("Привет! Согласен с правилами? (Напиши 'Да')");
   $('interviewInput').classList.remove('hidden'); setTimeout(() => { $('botInput').focus(); }, 100);
 }
 
@@ -264,7 +260,7 @@ async function botSend() {
   userMsg(val); $('botInput').value = '';
 
   if (botStep === 1) { 
-    if(val.toLowerCase() !== 'да' && val.toLowerCase() !== 'yes') return botMsg("Нужно согласиться. Напиши 'Да'");
+    if(val.toLowerCase() !== 'да') return botMsg("Нужно согласиться. Напиши 'Да'");
     botStep = 2; botMsg("Как тебя зовут?"); 
   }
   else if (botStep === 2) { reqData.name = val; saveReqData(); botStep = 3; botMsg("В какой ты школе?"); }
@@ -306,7 +302,6 @@ async function doLogin(){
 }
 async function logout(){ await api('/api/logout','POST'); location.reload(); }
 
-// --- СТАРТ ---
 async function start(){
   $('auth').classList.add('hidden'); $('app').classList.remove('hidden');
   updateMyProfile();
@@ -348,7 +343,6 @@ async function openChat(id, name){
   const {messages, chat} = await api('/api/messages?chat_id='+id);
   currentChatObj = chat;
   
-  // Показываем кнопку настроек, если ты владелец или админ
   if (chat.owner_id === me.id || me.role === 'admin') $('editChatBtn').classList.remove('hidden');
 
   if (chat.pinned_msg_id) {
@@ -379,17 +373,13 @@ function addMessageToUI(m){
   $('log').appendChild(d); $('log').scrollTop=$('log').scrollHeight;
 }
 
-async function pinMsg(id) {
-  await api('/api/messages/'+id+'/pin', 'POST');
-}
-
+async function pinMsg(id) { await api('/api/messages/'+id+'/pin', 'POST'); }
 function send(){ const t=$('msg').value.trim(); if(!t||!currentChatId)return; socket.emit('message',{chatId:currentChatId, text:t}); $('msg').value='';$('msg').focus(); }
 function sendSticker(s){ if(!currentChatId) return alert('Выбери чат'); socket.emit('message',{chatId:currentChatId, sticker:s}); toggleStickers(); }
 $('msg').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}});
 function toggleStickers(){ $('stickerBox').classList.toggle('hidden'); }
 $('botInput').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();botSend()}});
 
-// --- НАСТРОЙКИ ГРУППЫ ---
 async function openEditChat() {
   if(!currentChatObj) return;
   const { members } = await api('/api/chats/'+currentChatId+'/members');
@@ -410,18 +400,9 @@ async function openEditChat() {
   </div>`;
   document.body.appendChild(bg);
 }
-async function saveChatName() {
-  const name = $('editName').value.trim();
-  await api('/api/chats/'+currentChatId+'/edit', 'POST', { newName: name });
-  alert('Сохранено'); location.reload();
-}
-async function kickUser(userId) {
-  if(!confirm('Удалить участника?')) return;
-  await api('/api/chats/'+currentChatId+'/kick', 'POST', { userId });
-  alert('Удален'); loadChats(); document.querySelector('.modal-bg').remove();
-}
+async function saveChatName() { await api('/api/chats/'+currentChatId+'/edit', 'POST', { newName: $('editName').value.trim() }); alert('Сохранено'); location.reload(); }
+async function kickUser(userId) { if(!confirm('Удалить?')) return; await api('/api/chats/'+currentChatId+'/kick', 'POST', { userId }); alert('Удален'); loadChats(); document.querySelector('.modal-bg').remove(); }
 
-// --- ПРОФИЛИ ---
 async function openUserProfile(username) {
   if(username === 'Система') return;
   try {
@@ -463,7 +444,6 @@ async function startDM(username, btn) {
   btn.closest('.modal-bg').remove(); await loadChats(); openChat(chatId, name);
 }
 
-// --- СОЗДАНИЕ ЧАТА/КАНАЛА ---
 async function openCreateChat(){
   const {users}=await api('/api/users'); const bg=document.createElement('div'); bg.className='modal-bg';
   bg.innerHTML=`<div class="modal"><h3>Создать</h3>
@@ -479,21 +459,18 @@ async function createGroup(btn){
   if(!name)return alert('Введи название'); await api('/api/chats','POST',{name, type, memberIds}); bg.remove(); await loadChats();
 }
 
-// --- ЧАТ ПОМОЩИ ---
 async function openHelp() {
   const bg=document.createElement('div'); bg.className='modal-bg';
-  bg.innerHTML=`<div class="modal"><h3>🆘 Помощь и поддержка</h3>
-    <select id="helpType"><option>Ошибка в приложении</option><option>Жалоба на пользователя</option><option>Проблема с покупкой</option><option>Другое</option></select>
+  bg.innerHTML=`<div class="modal"><h3>🆘 Поддержка</h3>
+    <select id="helpType"><option>Ошибка</option><option>Жалоба</option><option>Проблема с покупкой</option><option>Другое</option></select>
     <textarea id="helpText" rows="4" placeholder="Опишите проблему..."></textarea>
-    <button onclick="sendHelp(this)">Отправить в поддержку</button>
+    <button onclick="sendHelp(this)">Отправить</button>
     <button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button></div>`;
   document.body.appendChild(bg);
 }
 async function sendHelp(btn) {
-  const type = $('helpType').value, text = $('helpText').value.trim();
-  if(!text) return alert('Опишите проблему');
-  // Имитация отправки
-  alert('Ваше обращение ('+type+') отправлено администрации!');
+  if(!$('helpText').value.trim()) return alert('Опишите проблему');
+  alert('Обращение ('+$('helpType').value+') отправлено!');
   btn.closest('.modal-bg').remove();
 }
 
@@ -522,19 +499,16 @@ async function buy(id){
   alert('Куплено! Открываю чат с продавцом.');
   await loadChats(); openChat(res.chatId, 'Чат покупки');
 }
-
 function tab(t){
   if(!currentChatId)return alert('Выбери чат');
   $('log').classList.toggle('hidden',t!=='chat'); $('shopBox').classList.toggle('hidden',t!=='shop'); $('sellBox').classList.toggle('hidden',t!=='sell');
   $('comp').style.display=t==='chat'?'flex':'none'; if(t==='shop')loadShop();
 }
 
-// --- АДМИНКА ---
 async function openAdminPanel(){
   const bg=document.createElement('div'); bg.className='modal-bg';
   bg.innerHTML=`<div class="modal"><h3>🛠 Админ</h3>
     <button style="background:#c22" onclick="emergencyClear()">🚨 ОЧИСТИТЬ ВСЕ СООБЩЕНИЯ</button>
-    <button style="background:#000" onclick="banAll()">⛔ ЗАБАНИТЬ ВСЕХ</button>
     <hr style="margin:15px 0;border:none;border-top:1px solid #eee">
     <h4>Пользователи</h4><div id="userManageList">Загрузка...</div>
     <button class="close" style="margin-top:15px" onclick="this.parentElement.parentElement.remove()">Закрыть</button></div>`;
@@ -552,7 +526,6 @@ async function loadAdminData() {
     ul.appendChild(d);
   });
 }
-
 async function openAdminUserDetails(userId) {
   const { user, chats, sold } = await api('/api/admin/user-details', 'POST', { userId });
   const bg = document.createElement('div'); bg.className='modal-bg';
@@ -571,22 +544,19 @@ async function openAdminUserDetails(userId) {
       ${sold.map(s=>`<div>${esc(s.title)} - ${s.price} П. (${s.status})</div>`).join('') || 'Нет'}
     </div>
     <div style="display:flex;gap:10px;margin-top:15px">
-      <button style="background:#c22" onclick="deleteUser(${user.id})">Удалить аккаунт</button>
+      <button style="background:#c22" onclick="deleteUser(${user.id})">Удалить</button>
       <button class="close" style="margin:0" onclick="this.parentElement.parentElement.remove()">Назад</button>
     </div>
   </div>`;
   document.body.appendChild(bg);
 }
-
 async function deleteUser(userId) {
-  if(!confirm('УДАЛИТЬ АККАУНТ? Это действие необратимо.')) return;
+  if(!confirm('УДАЛИТЬ АККАУНТ?')) return;
   await api('/api/admin/delete-user', 'POST', { userId });
-  alert('Аккаунт удален'); document.querySelector('.modal-bg').remove(); loadAdminData();
+  alert('Удален'); document.querySelector('.modal-bg').remove(); loadAdminData();
 }
-
 async function toggleBan(userId, ban) { await api('/api/admin/ban', 'POST', { userId, banned: ban }); loadAdminData(); }
-async function banAll() { if(confirm('Забанить ВСЕХ?')) { await api('/api/admin/ban-all', 'POST'); alert('Все забанены'); loadAdminData(); } }
 async function emergencyClear() { if(confirm('Удалить ВСЕ сообщения?')) { await api('/api/admin/emergency-clear', 'POST'); alert('Очищено'); } }
 </script>
 </body>
-  </html>
+          </html>
