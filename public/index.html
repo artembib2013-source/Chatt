@@ -9,7 +9,7 @@
 body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dvh;overflow:hidden;position:fixed;width:100%}
 .hidden{display:none!important}
 
-/* Стили авторизации */
+/* Авторизация */
 #auth{display:flex;align-items:center;justify-content:center;height:100vh;height:100dvh;padding:16px;background:#3390ec;overflow-y:auto}
 .card{background:#fff;padding:22px;border-radius:12px;width:100%;max-width:340px;box-shadow:0 8px 30px rgba(0,0,0,.2)}
 .card h2{margin-bottom:14px;font-size:19px;text-align:center;color:#3390ec}
@@ -18,13 +18,13 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 .card .sw{text-align:center;margin-top:10px;font-size:13px;color:#3390ec;cursor:pointer}
 .err{color:#c22;font-size:12px;margin-top:5px;min-height:16px;text-align:center}
 
-/* Интерфейс */
+/* Основной интерфейс */
 #app{display:flex;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
 @media(min-width:700px){#app{flex-direction:row}}
 .sidebar{background:#fff;border-right:1px solid #ddd;width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
 @media(min-width:700px){.sidebar{width:300px}}
 .sidebar header{background:#3390ec;color:#fff;padding:12px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0}
-.user-profile{display:flex;align-items:center;gap:10px}
+.user-profile{display:flex;align-items:center;gap:10px;cursor:pointer}
 .avatar{width:40px;height:40px;border-radius:50%;background:#ccc;object-fit:cover}
 .chat-list{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
 .chat-item{padding:12px;border-bottom:1px solid #f0f0f0;cursor:pointer;display:flex;align-items:center;gap:10px}
@@ -42,12 +42,19 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 .msg.mine{align-self:flex-end;flex-direction:row-reverse}
 .msg .bubble{padding:8px 12px;background:#fff;border-radius:12px;word-wrap:break-word;box-shadow:0 1px 1px rgba(0,0,0,.05)}
 .msg.mine .bubble{background:#effdde}
-.msg .who{font-size:11px;color:#3390ec;font-weight:600;margin-bottom:2px}
+.msg .who{font-size:11px;color:#3390ec;font-weight:600;margin-bottom:2px;cursor:pointer;text-decoration:underline}
 .msg .t{font-size:10px;color:#999;text-align:right;margin-top:2px}
+.sticker-img{width:100px;height:100px;object-fit:contain}
 
 .comp{padding:8px;background:#fff;border-top:1px solid #ddd;display:flex;gap:6px;flex-shrink:0;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
 .comp input{flex:1;padding:10px 13px;border:1px solid #ccc;border-radius:18px;font-size:16px;outline:none}
 .comp button{padding:10px 16px;border:none;background:#3390ec;color:#fff;border-radius:18px;font-size:15px;cursor:pointer}
+.sticker-btn{background:#f39c12!important;font-size:18px!important;padding:8px 14px!important}
+
+/* Стикеры */
+#stickerBox{position:fixed;bottom:60px;left:0;right:0;background:#fff;border-top:1px solid #ddd;padding:10px;display:grid;grid-template-columns:repeat(6,1fr);gap:10px;z-index:100;max-height:200px;overflow-y:auto}
+#stickerBox span{font-size:30px;text-align:center;cursor:pointer;padding:5px;border-radius:8px}
+#stickerBox span:hover{background:#f0f0f0}
 
 /* Магазин */
 #shopBox{padding:12px;display:grid;gap:10px;overflow-y:auto;flex:1;grid-template-columns:1fr 1fr;-webkit-overflow-scrolling:touch}
@@ -78,6 +85,7 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 #back-btn{display:none;background:none;border:none;font-size:20px;cursor:pointer;margin-right:8px}
 .btn-ban{background:#c22!important;color:#fff;padding:4px 8px;font-size:11px;width:auto!important;margin:0!important}
 .btn-unban{background:#2ba84a!important;color:#fff;padding:4px 8px;font-size:11px;width:auto!important;margin:0!important}
+.btn-req{background:#3390ec!important;color:#fff;padding:4px 8px;font-size:11px;width:auto!important;margin:0!important}
 </style>
 </head>
 <body>
@@ -106,8 +114,8 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 <div id="app" class="hidden">
   <div class="sidebar">
     <header>
-      <div class="user-profile">
-        <img id="myAvatar" class="avatar" src="https://via.placeholder.com/40" onclick="openSettings()">
+      <div class="user-profile" onclick="openMyProfile()">
+        <img id="myAvatar" class="avatar" src="https://via.placeholder.com/40">
         <div>
           <div id="me-name" style="font-weight:600">Профиль</div>
           <div style="font-size:11px;color:#cde">Баланс: <span id="me-balance">0</span> П.</div>
@@ -127,7 +135,7 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
     <header>
       <div style="display:flex;align-items:center">
         <button id="back-btn" onclick="closeChat()">←</button>
-        <h3 id="chat-title">Выбери чат</h3>
+        <h3 id="chat-title" style="cursor:pointer" onclick="openChatInfo()">Выбери чат</h3>
       </div>
       <div>
         <button onclick="tab('chat')" style="background:none;border:none;font-size:18px;cursor:pointer;padding:4px">💬</button>
@@ -151,10 +159,33 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
     </div>
 
     <div class="comp" id="comp">
+      <button class="sticker-btn" onclick="toggleStickers()">😀</button>
       <input id="msg" placeholder="Сообщение..." disabled>
       <button onclick="send()" id="send-btn" disabled>➤</button>
     </div>
   </div>
+</div>
+
+<!-- Панель стикеров -->
+<div id="stickerBox" class="hidden">
+  <span onclick="sendSticker('😀')">😀</span>
+  <span onclick="sendSticker('😂')">😂</span>
+  <span onclick="sendSticker('🥰')">🥰</span>
+  <span onclick="sendSticker('😎')">😎</span>
+  <span onclick="sendSticker('😭')">😭</span>
+  <span onclick="sendSticker('🤬')">🤬</span>
+  <span onclick="sendSticker('👍')">👍</span>
+  <span onclick="sendSticker('👎')">👎</span>
+  <span onclick="sendSticker('🔥')">🔥</span>
+  <span onclick="sendSticker('💩')">💩</span>
+  <span onclick="sendSticker('🎉')">🎉</span>
+  <span onclick="sendSticker('💔')">💔</span>
+  <span onclick="sendSticker('🐱')">🐱</span>
+  <span onclick="sendSticker('🐶')">🐶</span>
+  <span onclick="sendSticker('🍕')">🍕</span>
+  <span onclick="sendSticker('🚀')">🚀</span>
+  <span onclick="sendSticker('пулик')">🪙</span>
+  <span onclick="sendSticker('💸')">💸</span>
 </div>
 
 <script src="/socket.io/socket.io.js"></script>
@@ -231,23 +262,88 @@ async function loadChats(){
 async function openChat(id, name){
   currentChatId=id; $('chat-title').textContent=name;
   $('app').classList.add('chat-open'); $('log').classList.remove('hidden'); $('comp').style.display='flex';
-  $('shopBox').classList.add('hidden'); $('sellBox').classList.add('hidden');
+  $('shopBox').classList.add('hidden'); $('sellBox').classList.add('hidden'); $('#stickerBox').classList.add('hidden');
   socket.emit('join_chat', id);
   const {messages}=await api('/api/messages?chat_id='+id);
   $('log').innerHTML=''; messages.forEach(addMessageToUI); loadChats();
-  
-  // Включаем поле ввода и принудительно вызываем клавиатуру
   $('msg').disabled = false; $('send-btn').disabled = false;
   setTimeout(() => { $('msg').focus(); }, 100);
 }
 function closeChat(){$('app').classList.remove('chat-open'); currentChatId=null;}
 function addMessageToUI(m){
   const d=document.createElement('div'); d.className='msg'+(m.user_id===me.id?' mine':'');
-  d.innerHTML=`<img class="avatar" src="${m.avatar || 'https://ui-avatars.com/api/?name='+esc(m.username)}"><div class="bubble">${m.username!=='Система'?`<div class="who">${esc(m.username)}</div>`:''}${esc(m.text)}<div class="t">${fmtT(m.created_at)}</div></div>`;
+  let content = m.text;
+  if (m.sticker) content = `<span style="font-size:40px">${m.sticker}</span>`;
+  d.innerHTML=`<img class="avatar" src="${m.avatar || 'https://ui-avatars.com/api/?name='+esc(m.username)}" onclick="openUserProfile('${esc(m.username)}')"><div class="bubble">${m.username!=='Система'?`<div class="who" onclick="openUserProfile('${esc(m.username)}')">${esc(m.username)}</div>`:''}${content}<div class="t">${fmtT(m.created_at)}</div></div>`;
   $('log').appendChild(d); $('log').scrollTop=$('log').scrollHeight;
 }
-function send(){ const t=$('msg').value.trim(); if(!t||!currentChatId)return; socket.emit('message',{chatId:currentChatId, text:t}); $('msg').value='';$('msg').focus(); }
+function send(){ 
+  const t=$('msg').value.trim(); if(!t||!currentChatId)return; 
+  socket.emit('message',{chatId:currentChatId, text:t}); 
+  $('msg').value='';$('msg').focus(); 
+}
+function sendSticker(s){
+  if(!currentChatId) return alert('Выбери чат');
+  socket.emit('message',{chatId:currentChatId, sticker:s});
+  toggleStickers();
+}
 $('msg').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();send()}});
+
+function toggleStickers(){ $('#stickerBox').classList.toggle('hidden'); }
+
+// --- ПРОФИЛИ ---
+async function openUserProfile(username) {
+  if(username === 'Система') return;
+  try {
+    const {user} = await api('/api/profile/' + username);
+    const bg=document.createElement('div'); bg.className='modal-bg';
+    bg.innerHTML=`<div class="modal" style="text-align:center">
+      <img src="${user.avatar || 'https://ui-avatars.com/api/?name='+esc(user.username)}" style="width:80px;height:80px;border-radius:50%;margin-bottom:10px;object-fit:cover">
+      <h3>${esc(user.username)}</h3>
+      <p style="color:#666;font-size:12px;margin:5px 0">${esc(user.bio || 'Без описания')}</p>
+      <p style="color:#f39c12;font-weight:bold;margin:10px 0">Баланс: ${user.balance} П.</p>
+      ${user.username !== me.username ? `<button style="background:#2ba84a" onclick="startDM('${esc(user.username)}', this)">✉️ Написать в ЛС</button>` : '<button class="close" onclick="openMyProfile()">Редактировать</button>'}
+      <button class="close" onclick="this.parentElement.parentElement.remove()">Закрыть</button>
+    </div>`;
+    document.body.appendChild(bg);
+  } catch(e) { alert(e.message); }
+}
+
+async function openMyProfile() {
+  const bg=document.createElement('div'); bg.className='modal-bg';
+  bg.innerHTML=`<div class="modal" style="text-align:center">
+    <img src="${me.avatar || 'https://ui-avatars.com/api/?name='+esc(me.username)}" style="width:80px;height:80px;border-radius:50%;margin-bottom:10px;object-fit:cover">
+    <h3>Мой профиль</h3>
+    <input id="setBio" placeholder="О себе..." value="${esc(me.bio||'')}">
+    <input id="setAvatar" placeholder="Ссылка на фото (URL)" value="${esc(me.avatar||'')}">
+    ${me.role==='admin' ? '<input id="setNick" placeholder="Сменить ник" value="'+esc(me.username)+'">' : ''}
+    <button onclick="saveMyProfile(this)">Сохранить</button>
+    <button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button>
+  </div>`;
+  document.body.appendChild(bg);
+}
+
+async function saveMyProfile(btn) {
+  const bg=btn.closest('.modal-bg');
+  const bio = bg.querySelector('#setBio').value.trim();
+  const avatar = bg.querySelector('#setAvatar').value.trim();
+  const nickEl = bg.querySelector('#setNick');
+  const username = nickEl ? nickEl.value.trim() : null;
+  
+  await api('/api/profile/update', 'POST', { bio, avatar, username });
+  me.bio = bio; me.avatar = avatar;
+  if(username) me.username = username;
+  updateMyProfile(); bg.remove();
+}
+
+async function startDM(username, btn) {
+  try {
+    const {chatId} = await api('/api/dm/start', 'POST', { username });
+    btn.closest('.modal-bg').remove();
+    await loadChats();
+    openChat(chatId, 'Личный чат с ' + username);
+  } catch(e) { alert(e.message); }
+}
 
 // --- МАГАЗИН ---
 async function loadShop(){
@@ -296,9 +392,8 @@ async function doTransfer(btn){
   const bg=btn.closest('.modal-bg');
   const toUser=bg.querySelector('#trUser').value.trim(), amount=bg.querySelector('#trAmount').value;
   try {
-    await api('/api/transfer', 'POST', { toUser, amount });
+    await api('/api/transfer', 'POST', { toUser, amount }); // Нужно добавить этот роут на сервере, если еще нет
     alert('Переведено!'); bg.remove();
-    me.balance -= +amount; updateMyProfile();
   } catch(e) { alert(e.message); }
 }
 
@@ -316,27 +411,12 @@ async function createGroup(btn){
   if(!name)return alert('Введи название'); await api('/api/chats','POST',{name, memberIds}); bg.remove(); await loadChats();
 }
 
-// --- НАСТРОЙКИ ПРОФИЛЯ (АВАТАРКА) ---
-function openSettings(){
-  const bg=document.createElement('div'); bg.className='modal-bg';
-  bg.innerHTML=`<div class="modal"><h3>Настройки профиля</h3>
-    <p style="font-size:12px;color:#666;margin-bottom:8px">Вставь ссылку на фото:</p>
-    <input id="setAvatar" placeholder="https://...">
-    <button onclick="saveSettings(this)">Сохранить</button>
-    <button class="close" onclick="this.parentElement.parentElement.remove()">Отмена</button></div>`;
-  document.body.appendChild(bg);
-  bg.querySelector('#setAvatar').value = me.avatar || '';
-}
-async function saveSettings(btn){
-  const bg=btn.closest('.modal-bg'); const avatar=bg.querySelector('#setAvatar').value.trim();
-  await api('/api/profile/update', 'POST', { avatar }); me.avatar = avatar; updateMyProfile(); bg.remove();
-}
-
-// --- ПАНЕЛЬ АДМИНА ---
+// --- АДМИНКА ---
 async function openAdminPanel(){
   const bg=document.createElement('div'); bg.className='modal-bg';
   bg.innerHTML=`<div class="modal"><h3>🛠 Админ</h3>
     <button style="background:#c22" onclick="emergencyClear()">🚨 ОЧИСТИТЬ ВСЕ</button>
+    <button style="background:#000" onclick="banAll()">⛔ ЗАБАНИТЬ ВСЕХ</button>
     <hr style="margin:15px 0;border:none;border-top:1px solid #eee">
     <h4>Заявки</h4><div id="reqList">Загрузка...</div>
     <hr style="margin:15px 0;border:none;border-top:1px solid #eee">
@@ -356,7 +436,11 @@ async function loadAdminData() {
   users.forEach(u => {
     if(u.username === 'tutu') return;
     const d = document.createElement('div'); d.className = 'user-item';
-    d.innerHTML = `<span>${esc(u.username)}</span> ${u.banned ? `<button class="btn-unban" onclick="toggleBan(${u.id}, false)">Разбанить</button>` : `<button class="btn-ban" onclick="toggleBan(${u.id}, true)">Забанить</button>`}`;
+    d.innerHTML = `<span>${esc(u.username)}</span> 
+      <div>
+        <button class="btn-ban" onclick="changeNick(${u.id}, '${esc(u.username)}')" style="background:#f39c12!important;color:#fff;margin-right:4px;padding:4px 8px;font-size:11px;border:none;border-radius:6px;cursor:pointer">Изм.</button>
+        ${u.banned ? `<button class="btn-unban" onclick="toggleBan(${u.id}, false)">Разбан</button>` : `<button class="btn-ban" onclick="toggleBan(${u.id}, true)">Бан</button>`}
+      </div>`;
     ul.appendChild(d);
   });
 }
@@ -372,7 +456,17 @@ async function createUserForReq(reqId, btn) {
   alert('Аккаунт создан!'); bg.remove(); loadAdminData();
 }
 async function toggleBan(userId, ban) { await api('/api/admin/ban', 'POST', { userId, banned: ban }); loadAdminData(); }
-async function emergencyClear() { if(confirm('Удалить ВСЁ?')) { await api('/api/admin/emergency-clear', 'POST'); alert('Очищено'); } }
+async function changeNick(userId, currentNick) {
+  const newNick = prompt('Новый ник для ' + currentNick, currentNick);
+  if(!newNick || newNick === currentNick) return;
+  await api('/api/admin/change-nick', 'POST', { userId, newNick });
+  alert('Ник изменен'); loadAdminData();
+}
+async function banAll() {
+  if(!confirm('Забанить ВСЕХ пользователей?')) return;
+  await api('/api/admin/ban-all', 'POST'); alert('Все забанены'); loadAdminData();
+}
+async function emergencyClear() { if(confirm('Удалить ВСЕ сообщения?')) { await api('/api/admin/emergency-clear', 'POST'); alert('Очищено'); } }
 </script>
 </body>
 </html>
