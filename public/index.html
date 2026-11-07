@@ -17,6 +17,7 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 .card .sw{text-align:center;margin-top:10px;font-size:13px;color:#3390ec;cursor:pointer}
 .err{color:#c22;font-size:12px;margin-top:5px;min-height:16px;text-align:center}
 
+/* Окно заявки (чат-бот) */
 #interviewBox{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:380px;box-shadow:0 8px 30px rgba(0,0,0,.2);display:flex;flex-direction:column;height:80vh;max-height:600px}
 #chatInterview{flex:1;overflow-y:auto;background:#f0f4f8;padding:10px;border-radius:8px;margin-bottom:10px;display:flex;flex-direction:column;gap:8px;font-size:13px}
 .bot-msg{background:#fff;padding:8px 12px;border-radius:10px;align-self:flex-start;box-shadow:0 1px 1px rgba(0,0,0,.05);max-width:90%}
@@ -25,6 +26,7 @@ body{font:14px system-ui,sans-serif;background:#e6ebee;height:100vh;height:100dv
 #interviewInput input{flex:1;padding:10px;border:1px solid #ccc;border-radius:8px;font-size:16px}
 #interviewInput button{padding:10px 15px;background:#3390ec;color:#fff;border:none;border-radius:8px;cursor:pointer}
 
+/* Основной интерфейс */
 #app{display:flex;height:100vh;height:100dvh;flex-direction:column;overflow:hidden}
 @media(min-width:700px){#app{flex-direction:row}}
 .sidebar{background:#fff;border-right:1px solid #ddd;width:100%;height:100vh;height:100dvh;display:flex;flex-direction:column;overflow:hidden}
@@ -219,7 +221,6 @@ async function api(url,m='GET',b){
 function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function fmtT(ts){return new Date(ts).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'})}
 
-// Функция для вызова клавиатуры при клике на область сообщений
 function focusMsg() {
   if (!$('msg').disabled && !currentChatId === null) {
     $('msg').focus();
@@ -290,9 +291,18 @@ async function botSend() {
   }
 }
 
+// ИСПРАВЛЕННАЯ ФУНКЦИЯ ОЖИДАНИЯ
 function checkRequestSocket(contact) {
-  socket = io();
-  socket.on('request_approved_' + contact, (data) => {
+  if(socket) socket.disconnect(); // Отключаем старый сокет, если был
+  socket = io(); 
+  
+  // Входим в комнату ожидания
+  socket.on('connect', () => {
+    socket.emit('join_waiting', contact);
+  });
+
+  // Слушаем событие одобрения
+  socket.on('request_approved', (data) => {
     $('waitingMsg').classList.add('hidden');
     $('successMsg').classList.remove('hidden');
     $('resLogin').textContent = data.login;
@@ -320,7 +330,7 @@ async function doLogin(){
 }
 async function logout(){ await api('/api/logout','POST'); location.reload(); }
 
-// --- СТАРТ ---
+// --- ОСТАЛЬНОЙ КОД ---
 async function start(){
   $('auth').classList.add('hidden'); $('app').classList.remove('hidden');
   updateMyProfile();
@@ -349,12 +359,10 @@ async function loadChats(){
     const d=document.createElement('div');
     d.className='chat-item'+(c.id===currentChatId?' on':'');
     d.innerHTML=`<img class="avatar" src="https://ui-avatars.com/api/?name=${esc(c.name)}&background=random"><div><div class="name">${esc(c.name)}</div><div class="count">${c.members_count} чел.</div></div>`;
-    // ВАЖНО: Принудительно фокусируемся на поле ввода сразу при клике на чат
     d.onclick=()=>{ openChat(c.id, c.name); setTimeout(()=>$('msg').focus(), 50); };
     list.appendChild(d);
   });
 }
-
 async function openChat(id, name){
   currentChatId=id; $('chat-title').textContent=name;
   $('app').classList.add('chat-open'); $('log').classList.remove('hidden'); $('comp').style.display='flex';
@@ -362,9 +370,7 @@ async function openChat(id, name){
   socket.emit('join_chat', id);
   const {messages}=await api('/api/messages?chat_id='+id);
   $('log').innerHTML=''; messages.forEach(addMessageToUI); loadChats();
-  
   $('msg').disabled = false; $('send-btn').disabled = false;
-  // Убираем задержку в 100мс, оставляем минимальную
   setTimeout(() => { $('msg').focus(); }, 10);
 }
 function closeChat(){$('app').classList.remove('chat-open'); currentChatId=null;}
